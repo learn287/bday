@@ -29,7 +29,6 @@
       font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    /* STAGE 1: BIRTHDAY CARD */
     #birthday-stage {
       position: fixed;
       inset: 0;
@@ -65,10 +64,7 @@
     .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); transition: all 0.3s ease; }
     .dot.active { width: 20px; border-radius: 4px; background: linear-gradient(90deg, #ffd700, #ffae00); box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); }
 
-    .page {
-      transition: opacity 0.35s ease;
-    }
-
+    .page { transition: opacity 0.35s ease; }
     .balloons { font-size: 38px; margin-bottom: 6px; }
     h1 {
       font-family: 'Playfair Display', serif;
@@ -119,7 +115,6 @@
       opacity: 0.85;
     }
 
-    /* STAGE 2: 3D GAME */
     #game-stage {
       display: none;
       position: fixed;
@@ -229,7 +224,6 @@
 </head>
 <body>
 
-  <!-- STAGE 1: BIRTHDAY -->
   <div id="birthday-stage">
     <div class="glass-card">
       <div class="step-dots">
@@ -237,7 +231,6 @@
         <span id="dot2" class="dot"></span>
       </div>
 
-      <!-- PAGE 1: GREETING (Tap to switch immediately) -->
       <div id="page1" class="page" onclick="switchToWishes()">
         <div class="balloons">🎈 ✨ 🎈</div>
         <h1>Happy Birthday<br>Saran</h1>
@@ -247,10 +240,9 @@
             <span>@|_VIP_JAAT_KING_|</span>
           </div>
         </div>
-        <div class="timer-note" id="p1-timer">Wishes opening in 5s...</div>
+        <div class="timer-note" id="p1-timer">Wishes opening in 5s... (or tap card)</div>
       </div>
 
-      <!-- PAGE 2: WISHES (Tap to start game immediately) -->
       <div id="page2" class="page" style="display: none; opacity: 0;" onclick="startJourney()">
         <div class="wishes-title">✨ Special Wishes For You ✨</div>
         <div class="wishes-container">
@@ -261,12 +253,11 @@ jisko chaha tha woh badla tha chahne wala nhi,
 jo mile ushe muskura kr apna lena,
 zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         </div>
-        <div class="timer-note" id="p2-timer">Starting drive in 7s... 🚗</div>
+        <div class="timer-note" id="p2-timer">Starting drive in 7s... (or tap card) 🚗</div>
       </div>
     </div>
   </div>
 
-  <!-- STAGE 2: 3D DRIVING GAME -->
   <div id="game-stage">
     <div id="webgl-container"></div>
     <div id="hud">
@@ -300,7 +291,6 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
       </div>
     </div>
   </div>
-
   <script>
     try {
       if (window.Telegram && window.Telegram.WebApp) {
@@ -315,7 +305,6 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
 
     triggerConfetti({ particleCount: 110, spread: 70, origin: { y: 0.6 } });
 
-    // P1 -> P2 Countdown & Transition
     let p1Secs = 5;
     let wishesTriggered = false;
 
@@ -357,7 +346,6 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
       }, 350);
     }
 
-    // P2 -> Game Countdown & Transition
     let p2Secs = 7;
     let gameTriggered = false;
 
@@ -390,7 +378,6 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
       }, 500);
     }
 
-    /* 3D ENGINE CORE */
     const TOTAL_DISTANCE = 1000;
     let speed = 0, traveledDistance = 0, elapsedTime = 0, isFinished = false;
     let isGasDown = false, isBrakeDown = false, steerLeft = false, steerRight = false;
