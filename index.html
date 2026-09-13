@@ -20,7 +20,6 @@
       padding: 0; 
       user-select: none;
       -webkit-user-select: none;
-      -webkit-touch-callout: none;
     }
     html, body {
       width: 100%;
@@ -39,8 +38,8 @@
       align-items: center;
       padding: 20px;
       z-index: 50;
-      background: radial-gradient(circle at 50% 40%, rgba(35, 20, 38, 0.9), rgba(6, 9, 14, 0.98) 75%);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      background: radial-gradient(circle at 50% 40%, rgba(35, 20, 38, 0.92), rgba(6, 9, 14, 0.98) 75%);
+      transition: opacity 0.6s ease;
     }
 
     .glass-card {
@@ -49,9 +48,9 @@
       max-width: 390px;
       padding: 26px 22px 28px;
       border-radius: 28px;
-      background: rgba(22, 22, 30, 0.7);
-      backdrop-filter: blur(24px) saturate(190%);
-      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      background: rgba(22, 22, 30, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.18);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
       text-align: center;
@@ -63,13 +62,12 @@
     }
 
     .step-dots { display: flex; justify-content: center; align-items: center; gap: 6px; margin-bottom: 18px; }
-    .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); transition: all 0.4s ease; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); transition: all 0.3s ease; }
     .dot.active { width: 20px; border-radius: 4px; background: linear-gradient(90deg, #ffd700, #ffae00); box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); }
 
-    .page { transition: opacity 0.5s ease, transform 0.5s ease; }
-    .page.fade-out { opacity: 0; transform: translateY(-15px); }
-    .page.hidden { display: none; opacity: 0; transform: translateY(15px); }
-    .page.fade-in { display: block; opacity: 1; transform: translateY(0); }
+    .page {
+      transition: opacity 0.35s ease;
+    }
 
     .balloons { font-size: 38px; margin-bottom: 6px; }
     h1 {
@@ -112,7 +110,14 @@
       text-align: left;
     }
     .shayari { white-space: pre-line; font-style: italic; }
-    .transition-status { margin-top: 14px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #ffd700; }
+    .timer-note {
+      margin-top: 16px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #ffd700;
+      opacity: 0.85;
+    }
 
     /* STAGE 2: 3D GAME */
     #game-stage {
@@ -169,12 +174,7 @@
       pointer-events: none;
       z-index: 15;
     }
-    .ctrl-group {
-      display: flex;
-      gap: 12px;
-      pointer-events: auto;
-    }
-
+    .ctrl-group { display: flex; gap: 12px; pointer-events: auto; }
     .btn-ui {
       touch-action: none;
       border-radius: 18px;
@@ -188,54 +188,17 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.6);
       transition: transform 0.05s ease, filter 0.05s ease;
     }
-    .btn-ui:active, .btn-ui.active {
-      transform: scale(0.92);
-      filter: brightness(1.3);
-    }
-
-    /* Steering Buttons */
-    .steer-btn {
-      width: 66px;
-      height: 66px;
-      font-size: 20px;
-      background: rgba(30, 45, 65, 0.75);
-      backdrop-filter: blur(8px);
-      border-color: rgba(120, 170, 240, 0.4);
-    }
-
-    /* Pedals */
-    .pedal-btn {
-      width: 76px;
-      height: 115px;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-    }
+    .btn-ui:active, .btn-ui.active { transform: scale(0.92); filter: brightness(1.3); }
+    .steer-btn { width: 66px; height: 66px; font-size: 20px; background: rgba(30, 45, 65, 0.75); border-color: rgba(120, 170, 240, 0.4); }
+    .pedal-btn { width: 76px; height: 115px; font-size: 12px; font-weight: 800; letter-spacing: 0.1em; }
     #brake-btn { background: linear-gradient(180deg, rgba(220, 53, 69, 0.5), rgba(180, 20, 35, 0.85)); }
     #race-btn { background: linear-gradient(180deg, rgba(40, 167, 69, 0.5), rgba(25, 120, 50, 0.85)); height: 125px; }
-
-    #look-prompt {
-      position: fixed;
-      top: 75px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255,255,255,0.7);
-      font-size: 11px;
-      background: rgba(0,0,0,0.5);
-      padding: 6px 14px;
-      border-radius: 20px;
-      pointer-events: none;
-      z-index: 10;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
 
     #finish-screen {
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.85);
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       display: none;
       place-items: center;
       z-index: 30;
@@ -274,7 +237,8 @@
         <span id="dot2" class="dot"></span>
       </div>
 
-      <div id="page1" class="page">
+      <!-- PAGE 1: GREETING (Tap to switch immediately) -->
+      <div id="page1" class="page" onclick="switchToWishes()">
         <div class="balloons">🎈 ✨ 🎈</div>
         <h1>Happy Birthday<br>Saran</h1>
         <div class="vip-container">
@@ -283,9 +247,11 @@
             <span>@|_VIP_JAAT_KING_|</span>
           </div>
         </div>
+        <div class="timer-note" id="p1-timer">Wishes opening in 5s...</div>
       </div>
 
-      <div id="page2" class="page hidden">
+      <!-- PAGE 2: WISHES (Tap to start game immediately) -->
+      <div id="page2" class="page" style="display: none; opacity: 0;" onclick="startJourney()">
         <div class="wishes-title">✨ Special Wishes For You ✨</div>
         <div class="wishes-container">
           <div class="wish-bubble">🌟 May you get pure and trusted people in your life.</div>
@@ -295,7 +261,7 @@ jisko chaha tha woh badla tha chahne wala nhi,
 jo mile ushe muskura kr apna lena,
 zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         </div>
-        <div class="transition-status">Starting your 1 KM Journey soon... 🚗</div>
+        <div class="timer-note" id="p2-timer">Starting drive in 7s... 🚗</div>
       </div>
     </div>
   </div>
@@ -314,16 +280,11 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
       </div>
     </div>
 
-    <div id="look-prompt">Drag screen to look · W/A/S/D or Buttons to Drive</div>
-
     <div id="controls">
-      <!-- Steering Group (Left) -->
       <div class="ctrl-group">
         <div class="btn-ui steer-btn" id="steer-left-btn">◀</div>
         <div class="btn-ui steer-btn" id="steer-right-btn">▶</div>
       </div>
-
-      <!-- Pedals Group (Right) -->
       <div class="ctrl-group">
         <div class="btn-ui pedal-btn" id="brake-btn">BRAKE</div>
         <div class="btn-ui pedal-btn" id="race-btn">GAS</div>
@@ -354,23 +315,37 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
 
     triggerConfetti({ particleCount: 110, spread: 70, origin: { y: 0.6 } });
 
-    // 5s on Greeting -> Show Wishes
-    setTimeout(() => {
+    // P1 -> P2 Countdown & Transition
+    let p1Secs = 5;
+    let wishesTriggered = false;
+
+    const p1Interval = setInterval(() => {
+      p1Secs--;
+      const label = document.getElementById('p1-timer');
+      if (label && p1Secs > 0) label.textContent = `Wishes opening in ${p1Secs}s... (or tap card)`;
+      if (p1Secs <= 0) {
+        clearInterval(p1Interval);
+        switchToWishes();
+      }
+    }, 1000);
+
+    function switchToWishes() {
+      if (wishesTriggered) return;
+      wishesTriggered = true;
+      clearInterval(p1Interval);
+
       const page1 = document.getElementById('page1');
       const page2 = document.getElementById('page2');
       const dot1 = document.getElementById('dot1');
       const dot2 = document.getElementById('dot2');
 
       if (!page1 || !page2) return;
-      page1.style.opacity = '0';
 
+      page1.style.opacity = '0';
       setTimeout(() => {
         page1.style.display = 'none';
         page2.style.display = 'block';
-        page2.classList.remove('hidden');
-        void page2.offsetWidth;
-        page2.style.opacity = '1';
-        page2.classList.add('fade-in');
+        setTimeout(() => { page2.style.opacity = '1'; }, 20);
 
         if (dot1 && dot2) {
           dot1.classList.remove('active');
@@ -378,15 +353,30 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         }
 
         triggerConfetti({ particleCount: 85, spread: 80, origin: { y: 0.65 } });
+        startP2Countdown();
+      }, 350);
+    }
 
-        // 7s on Wishes -> Auto Launch Game
-        setTimeout(() => {
+    // P2 -> Game Countdown & Transition
+    let p2Secs = 7;
+    let gameTriggered = false;
+
+    function startP2Countdown() {
+      const p2Interval = setInterval(() => {
+        p2Secs--;
+        const label = document.getElementById('p2-timer');
+        if (label && p2Secs > 0) label.textContent = `Starting drive in ${p2Secs}s... (or tap card)`;
+        if (p2Secs <= 0) {
+          clearInterval(p2Interval);
           startJourney();
-        }, 7000);
-      }, 500);
-    }, 5000);
+        }
+      }, 1000);
+    }
 
     function startJourney() {
+      if (gameTriggered) return;
+      gameTriggered = true;
+
       const bdayStage = document.getElementById('birthday-stage');
       const gameStage = document.getElementById('game-stage');
       if (!bdayStage || !gameStage) return;
@@ -397,7 +387,7 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         gameStage.style.display = 'block';
         initGameEngine();
         initAudio();
-      }, 700);
+      }, 500);
     }
 
     /* 3D ENGINE CORE */
@@ -453,16 +443,15 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
       moon.position.set(40, 100, -30);
       scene.add(moon);
 
-      // Roadway Setup
       const ROAD_WIDTH = 14;
-      const roadGeo = new THREE.PlaneGeometry(ROAD_WIDTH, 1300);
-      const roadMat = new THREE.MeshStandardMaterial({ color: 0x181a1d, roughness: 0.85 });
-      const road = new THREE.Mesh(roadGeo, roadMat);
+      const road = new THREE.Mesh(
+        new THREE.PlaneGeometry(ROAD_WIDTH, 1300),
+        new THREE.MeshStandardMaterial({ color: 0x181a1d, roughness: 0.85 })
+      );
       road.rotation.x = -Math.PI / 2;
       road.position.set(0, 0, 550);
       scene.add(road);
 
-      // Center Lane Dashes
       for (let z = 5; z < 1250; z += 12) {
         const line = new THREE.Mesh(
           new THREE.PlaneGeometry(0.35, 6),
@@ -473,7 +462,6 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         scene.add(line);
       }
 
-      // Concrete Sidewalks
       [-ROAD_WIDTH/2 - 2, ROAD_WIDTH/2 + 2].forEach(x => {
         const sidewalk = new THREE.Mesh(
           new THREE.BoxGeometry(4, 0.35, 1300),
@@ -483,7 +471,6 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         scene.add(sidewalk);
       });
 
-      // Procedural City Buildings along road
       const buildingColors = [0x121720, 0x1b2230, 0x242a38, 0x18202d];
       for (let z = 15; z <= 1200; z += 35) {
         [-ROAD_WIDTH/2 - 18, ROAD_WIDTH/2 + 18].forEach(sideX => {
@@ -498,17 +485,16 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
           building.position.set(sideX + (sideX > 0 ? 5 : -5), height / 2, z);
           scene.add(building);
 
-          // Glowing windows on building facades
-          const winGeo = new THREE.PlaneGeometry(width * 0.7, height * 0.75);
-          const winMat = new THREE.MeshBasicMaterial({ color: Math.random() > 0.4 ? 0xffdf88 : 0x88c0ff, transparent: true, opacity: 0.25 });
-          const win = new THREE.Mesh(winGeo, winMat);
+          const win = new THREE.Mesh(
+            new THREE.PlaneGeometry(width * 0.7, height * 0.75),
+            new THREE.MeshBasicMaterial({ color: Math.random() > 0.4 ? 0xffdf88 : 0x88c0ff, transparent: true, opacity: 0.25 })
+          );
           win.position.set(sideX > 0 ? sideX - width/2 - 0.1 : sideX + width/2 + 0.1, height/2, z);
           win.rotation.y = sideX > 0 ? -Math.PI / 2 : Math.PI / 2;
           scene.add(win);
         });
       }
 
-      // Street Lamp Posts
       const lampMat = new THREE.MeshStandardMaterial({ color: 0x778899 });
       for (let z = 20; z <= 1100; z += 40) {
         [-ROAD_WIDTH/2 - 0.3, ROAD_WIDTH/2 + 0.3].forEach(x => {
@@ -522,7 +508,6 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         });
       }
 
-      // Finish Arch at 1000m
       const archGroup = new THREE.Group();
       archGroup.position.set(0, 0, 1000);
       const pillarMat = new THREE.MeshStandardMaterial({ color: 0xdd2222 });
@@ -535,29 +520,29 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
       archGroup.add(pLeft, pRight, crossbar);
       scene.add(archGroup);
 
-      // CAR RIG & COCKPIT VIEW
       carRig = new THREE.Group();
       scene.add(carRig);
-
-      // Camera positioned at natural driver eye level
       camera.position.set(0, 1.35, 0);
       carRig.add(camera);
 
-      // Low-profile Sports Dashboard (does not block road view)
-      const dashMat = new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.8 });
-      const dashboard = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.28, 0.7), dashMat);
+      const dashboard = new THREE.Mesh(
+        new THREE.BoxGeometry(2.0, 0.28, 0.7),
+        new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.8 })
+      );
       dashboard.position.set(0, 0.78, 0.55);
       carRig.add(dashboard);
 
-      // Hood visible out front
-      const hoodMat = new THREE.MeshStandardMaterial({ color: 0x9b111e, roughness: 0.3, metalness: 0.6 });
-      const hood = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.2, 1.6), hoodMat);
+      const hood = new THREE.Mesh(
+        new THREE.BoxGeometry(1.6, 0.2, 1.6),
+        new THREE.MeshStandardMaterial({ color: 0x9b111e, roughness: 0.3, metalness: 0.6 })
+      );
       hood.position.set(0, 0.68, 1.5);
       carRig.add(hood);
 
-      // Steering Wheel
-      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x08090a, roughness: 0.4 });
-      steeringWheel = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.024, 10, 24), wheelMat);
+      steeringWheel = new THREE.Mesh(
+        new THREE.TorusGeometry(0.18, 0.024, 10, 24),
+        new THREE.MeshStandardMaterial({ color: 0x08090a, roughness: 0.4 })
+      );
       steeringWheel.position.set(-0.35, 0.96, 0.4);
       steeringWheel.rotation.x = -0.35;
       carRig.add(steeringWheel);
@@ -567,8 +552,20 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
     }
 
     function setupEventListeners() {
-      // Look Around Drag
       window.addEventListener('pointerdown', e => {
         if (e.target.closest('.btn-ui') || isFinished) return;
         initAudio();
-        isDragg
+        isDragging = true;
+        prevPointerX = e.clientX;
+        prevPointerY = e.clientY;
+      });
+
+      window.addEventListener('pointermove', e => {
+        if (!isDragging) return;
+        yaw = Math.max(-1.2, Math.min(1.2, yaw - (e.clientX - prevPointerX) * 0.0035));
+        pitch = Math.max(-0.35, Math.min(0.3, pitch - (e.clientY - prevPointerY) * 0.003));
+        prevPointerX = e.clientX;
+        prevPointerY = e.clientY;
+      });
+
+      window.addEventListener(
