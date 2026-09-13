@@ -436,7 +436,7 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         new THREE.MeshStandardMaterial({ color: 0x181a1d, roughness: 0.85 })
       );
       road.rotation.x = -Math.PI / 2;
-      road.position.set(0, 0, 550);
+      road.position.set(0, 0, -550);
       scene.add(road);
 
       for (let z = 5; z < 1250; z += 12) {
@@ -445,7 +445,7 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
           new THREE.MeshBasicMaterial({ color: 0xffffff })
         );
         line.rotation.x = -Math.PI / 2;
-        line.position.set(0, 0.02, z);
+        line.position.set(0, 0.02, -z);
         scene.add(line);
       }
 
@@ -454,7 +454,7 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
           new THREE.BoxGeometry(4, 0.35, 1300),
           new THREE.MeshStandardMaterial({ color: 0x3a4049, roughness: 0.9 })
         );
-        sidewalk.position.set(x, 0.15, 550);
+        sidewalk.position.set(x, 0.15, -550);
         scene.add(sidewalk);
       });
 
@@ -469,14 +469,14 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
             roughness: 0.7
           });
           const building = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bMat);
-          building.position.set(sideX + (sideX > 0 ? 5 : -5), height / 2, z);
+          building.position.set(sideX + (sideX > 0 ? 5 : -5), height / 2, -z);
           scene.add(building);
 
           const win = new THREE.Mesh(
             new THREE.PlaneGeometry(width * 0.7, height * 0.75),
             new THREE.MeshBasicMaterial({ color: Math.random() > 0.4 ? 0xffdf88 : 0x88c0ff, transparent: true, opacity: 0.25 })
           );
-          win.position.set(sideX > 0 ? sideX - width/2 - 0.1 : sideX + width/2 + 0.1, height/2, z);
+          win.position.set(sideX > 0 ? sideX - width/2 - 0.1 : sideX + width/2 + 0.1, height/2, -z);
           win.rotation.y = sideX > 0 ? -Math.PI / 2 : Math.PI / 2;
           scene.add(win);
         });
@@ -486,17 +486,17 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
       for (let z = 20; z <= 1100; z += 40) {
         [-ROAD_WIDTH/2 - 0.3, ROAD_WIDTH/2 + 0.3].forEach(x => {
           const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 6), lampMat);
-          pole.position.set(x, 3, z);
+          pole.position.set(x, 3, -z);
           scene.add(pole);
 
           const glow = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffea88 }));
-          glow.position.set(x, 6, z);
+          glow.position.set(x, 6, -z);
           scene.add(glow);
         });
       }
 
       const archGroup = new THREE.Group();
-      archGroup.position.set(0, 0, 1000);
+      archGroup.position.set(0, 0, -1000);
       const pillarMat = new THREE.MeshStandardMaterial({ color: 0xdd2222 });
       const pLeft = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 7), pillarMat);
       pLeft.position.set(-ROAD_WIDTH/2, 3.5, 0);
@@ -516,21 +516,21 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         new THREE.BoxGeometry(2.0, 0.28, 0.7),
         new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.8 })
       );
-      dashboard.position.set(0, 0.78, 0.55);
+      dashboard.position.set(0, 0.78, -0.55);
       carRig.add(dashboard);
 
       const hood = new THREE.Mesh(
         new THREE.BoxGeometry(1.6, 0.2, 1.6),
         new THREE.MeshStandardMaterial({ color: 0x9b111e, roughness: 0.3, metalness: 0.6 })
       );
-      hood.position.set(0, 0.68, 1.5);
+      hood.position.set(0, 0.68, -1.5);
       carRig.add(hood);
 
       steeringWheel = new THREE.Mesh(
         new THREE.TorusGeometry(0.18, 0.024, 10, 24),
         new THREE.MeshStandardMaterial({ color: 0x08090a, roughness: 0.4 })
       );
-      steeringWheel.position.set(-0.35, 0.96, 0.4);
+      steeringWheel.position.set(-0.35, 0.96, -0.4);
       steeringWheel.rotation.x = -0.35;
       carRig.add(steeringWheel);
 
@@ -645,7 +645,7 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
 
         if (carRig) {
           carRig.position.x = carX;
-          carRig.position.z = traveledDistance;
+          carRig.position.z = -traveledDistance;
           carRig.rotation.z = -steerInput * 0.035;
         }
 
