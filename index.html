@@ -1,0 +1,378 @@
+<script>
+  // 1. Telegram Mini App Init
+  try {
+    if (window.Telegram && window.Telegram.WebApp) {
+      Telegram.WebApp.ready();
+      Telegram.WebApp.expand();
+    }
+  } catch (e) {
+    console.warn("Telegram WebApp init bypassed:", e);
+  }
+
+  // Safe Confetti Wrapper
+  function triggerConfetti(opts) {
+    try {
+      if (typeof confetti === 'function') confetti(opts);
+    } catch(e) {}
+  }
+
+  // Immediate Page 1 Launch
+  triggerConfetti({ particleCount: 110, spread: 70, origin: { y: 0.6 } });
+  console.log("Stage 1: 'Happy Birthday Saran' active. Timer started (5s)...");
+
+  // Step 2: Switch to Wishes after exactly 5 seconds
+  setTimeout(() => {
+    console.log("5s reached: Transitioning to Wishes...");
+    const page1 = document.getElementById('page1');
+    const page2 = document.getElementById('page2');
+    const dot1 = document.getElementById('dot1');
+    const dot2 = document.getElementById('dot2');
+
+    if (!page1 || !page2) return;
+
+    // Fade out Page 1
+    page1.style.opacity = '0';
+    page1.style.transform = 'translateY(-15px)';
+
+    setTimeout(() => {
+      page1.style.display = 'none';
+
+      // Reveal Page 2
+      page2.style.display = 'block';
+      page2.classList.remove('hidden');
+
+      // Force DOM Reflow to guarantee animations trigger
+      void page2.offsetWidth;
+
+      page2.style.opacity = '1';
+      page2.style.transform = 'translateY(0)';
+      page2.classList.add('fade-in');
+
+      if (dot1 && dot2) {
+        dot1.classList.remove('active');
+        dot2.classList.add('active');
+      }
+
+      triggerConfetti({ particleCount: 85, spread: 80, origin: { y: 0.65 } });
+      console.log("Stage 2: Wishes displayed. Timer started (7s)...");
+
+      // Step 3: Switch to 3D Game after exactly 7 seconds of Wishes
+      setTimeout(() => {
+        console.log("7s reached: Launching 3D Car Game...");
+        startJourney();
+      }, 7000);
+
+    }, 500);
+  }, 5000);
+
+  // Transition from Wishes to 3D Game Stage
+  function startJourney() {
+    const bdayStage = document.getElementById('birthday-stage');
+    const gameStage = document.getElementById('game-stage');
+
+    if (!bdayStage || !gameStage) return;
+
+    bdayStage.style.opacity = '0';
+    bdayStage.style.transform = 'scale(0.95)';
+
+    setTimeout(() => {
+      bdayStage.style.display = 'none';
+      gameStage.style.display = 'block';
+
+      initGameEngine();
+      initAudio();
+    }, 700);
+  }
+
+  /* ============================================================
+     THREE.JS 3D COCKPIT GAME ENGINE
+  ============================================================ */
+  const TOTAL_DISTANCE = 1000;
+  let speed = 0;
+  let traveledDistance = 0;
+  let elapsedTime = 0;
+  let isFinished = false;
+  let isGasDown = false;
+  let isBrakeDown = false;
+  let gameInitialized = false;
+
+  let audioCtx = null, engineOsc = null, engineGain = null;
+  function initAudio() {
+    if (audioCtx) return;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      engineOsc = audioCtx.createOscillator();
+      engineGain = audioCtx.createGain();
+      engineOsc.type = 'sawtooth';
+      engineOsc.frequency.setValueAtTime(38, audioCtx.currentTime);
+      engineGain.gain.setValueAtTime(0.012, audioCtx.currentTime);
+      engineOsc.connect(engineGain);
+      engineGain.connect(audioCtx.destination);
+      engineOsc.start();
+    } catch(e) {}
+  }
+  function updateAudio() {
+    if (!audioCtx) return;
+    const targetFreq = 35 + (speed * 1.7);
+    const targetGain = 0.012 + (speed / 160) * 0.035;
+    engineOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.08);
+    engineGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.08);
+  }
+
+  let scene, camera, renderer, carRig;
+  let yaw = 0, pitch = 0, isDragging = false, prevPointerX = 0, prevPointerY = 0;
+
+  function initGameEngine() {
+    if (gameInitialized) return;
+    gameInitialized = true;
+
+    const container = document.getElementById('webgl-container');
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x89b6dc);
+    scene.fog = new THREE.Fog(0x89b6dc, 80, 360);
+
+    camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 500);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 0.7);
+    scene.add(hemiLight);
+    const sunLight = new THREE.DirectionalLight(0xfffaed, 0.9);
+    sunLight.position.set(40, 100, -30);
+    scene.add(sunLight);
+
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(800, 1400),
+      new THREE.MeshLambertMaterial({ color: 0x2e4823 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.set(0, -0.05, 500);
+    scene.add(ground);
+
+    const ROAD_WIDTH = 12;
+    const road = new THREE.Mesh(
+      new THREE.PlaneGeometry(ROAD_WIDTH, 1200),
+      new THREE.MeshStandardMaterial({ color: 0x1f2226, roughness: 0.9 })
+    );
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(0, 0, 500);
+    scene.add(road);
+
+    for (let z = 10; z < 1100; z += 12) {
+      const line = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.3, 6),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
+      line.rotation.x = -Math.PI / 2;
+      line.position.set(0, 0.01, z);
+      scene.add(line);
+    }
+
+    [-ROAD_WIDTH/2 + 0.3, ROAD_WIDTH/2 - 0.3].forEach(x => {
+      const edgeLine = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.2, 1200),
+        new THREE.MeshBasicMaterial({ color: 0xd9ba3b })
+      );
+      edgeLine.rotation.x = -Math.PI / 2;
+      edgeLine.position.set(x, 0.01, 500);
+      scene.add(edgeLine);
+    });
+
+    const archGroup = new THREE.Group();
+    archGroup.position.set(0, 0, 1000);
+    const pillarMat = new THREE.MeshStandardMaterial({ color: 0xdd2222 });
+    const pLeft = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 7), pillarMat);
+    pLeft.position.set(-ROAD_WIDTH/2 - 0.5, 3.5, 0);
+    const pRight = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 7), pillarMat);
+    pRight.position.set(ROAD_WIDTH/2 + 0.5, 3.5, 0);
+    const crossbar = new THREE.Mesh(
+      new THREE.BoxGeometry(ROAD_WIDTH + 3, 1.4, 0.8),
+      new THREE.MeshStandardMaterial({ color: 0xffffff })
+    );
+    crossbar.position.set(0, 6.5, 0);
+    archGroup.add(pLeft, pRight, crossbar);
+    scene.add(archGroup);
+
+    const trunkMat = new THREE.MeshLambertMaterial({ color: 0x4a2e18 });
+    const leavesMat = new THREE.MeshLambertMaterial({ color: 0x1f4720 });
+    for (let z = 20; z <= 1050; z += 25) {
+      [-ROAD_WIDTH/2 - 5, ROAD_WIDTH/2 + 5].forEach((baseX, idx) => {
+        const tree = new THREE.Group();
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, 2.5), trunkMat);
+        trunk.position.y = 1.25;
+        const leaves = new THREE.Mesh(new THREE.ConeGeometry(1.6, 4.5, 6), leavesMat);
+        leaves.position.y = 4.2;
+        tree.add(trunk, leaves);
+        tree.position.set(baseX + (Math.sin(z) * 4), 0, z + (idx * 5));
+        scene.add(tree);
+      });
+    }
+
+    carRig = new THREE.Group();
+    scene.add(carRig);
+    camera.position.set(-0.35, 1.25, 0);
+    carRig.add(camera);
+
+    const cockpitGroup = new THREE.Group();
+    carRig.add(cockpitGroup);
+
+    const interiorMat = new THREE.MeshStandardMaterial({ color: 0x181a1d, roughness: 0.8 });
+    const dashboard = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 0.8), interiorMat);
+    dashboard.position.set(0, 0.85, 0.45);
+    cockpitGroup.add(dashboard);
+
+    const steeringWheel = new THREE.Mesh(
+      new THREE.TorusGeometry(0.18, 0.022, 10, 24),
+      new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.5 })
+    );
+    steeringWheel.position.set(-0.35, 0.95, 0.3);
+    steeringWheel.rotation.x = -0.35;
+    cockpitGroup.add(steeringWheel);
+
+    const pillarL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.9, 0.06), interiorMat);
+    pillarL.position.set(-0.85, 1.35, 0.35);
+    pillarL.rotation.z = -0.3;
+    pillarL.rotation.x = -0.35;
+    const pillarR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.9, 0.06), interiorMat);
+    pillarR.position.set(0.85, 1.35, 0.35);
+    pillarR.rotation.z = 0.3;
+    pillarR.rotation.x = -0.35;
+    cockpitGroup.add(pillarL, pillarR);
+
+    setupEventListeners();
+    requestAnimationFrame(gameLoop);
+  }
+
+  function setupEventListeners() {
+    window.addEventListener('pointerdown', e => {
+      if (e.target.closest('.pedal-btn') || isFinished) return;
+      initAudio();
+      isDragging = true;
+      prevPointerX = e.clientX;
+      prevPointerY = e.clientY;
+      const prompt = document.getElementById('look-prompt');
+      if (prompt) prompt.style.opacity = '0';
+    });
+
+    window.addEventListener('pointermove', e => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - prevPointerX;
+      const deltaY = e.clientY - prevPointerY;
+      prevPointerX = e.clientX;
+      prevPointerY = e.clientY;
+
+      yaw -= deltaX * 0.004;
+      pitch -= deltaY * 0.003;
+      yaw = Math.max(-1.3, Math.min(1.3, yaw));
+      pitch = Math.max(-0.4, Math.min(0.35, pitch));
+    });
+
+    window.addEventListener('pointerup', () => isDragging = false);
+    window.addEventListener('pointercancel', () => isDragging = false);
+
+    const raceBtn = document.getElementById('race-btn');
+    const brakeBtn = document.getElementById('brake-btn');
+
+    function bindPedal(btn, setFlag) {
+      if (!btn) return;
+      const start = e => { e.preventDefault(); initAudio(); setFlag(true); btn.classList.add('active'); };
+      const end = e => { e.preventDefault(); setFlag(false); btn.classList.remove('active'); };
+      btn.addEventListener('pointerdown', start);
+      btn.addEventListener('pointerup', end);
+      btn.addEventListener('pointerleave', end);
+      btn.addEventListener('pointercancel', end);
+    }
+    bindPedal(raceBtn, val => isGasDown = val);
+    bindPedal(brakeBtn, val => isBrakeDown = val);
+
+    window.addEventListener('keydown', e => {
+      initAudio();
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') isGasDown = true;
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') isBrakeDown = true;
+    });
+    window.addEventListener('keyup', e => {
+      if (e.code === 'ArrowUp' || e.code === 'KeyW') isGasDown = false;
+      if (e.code === 'ArrowDown' || e.code === 'KeyS') isBrakeDown = false;
+    });
+
+    window.addEventListener('resize', () => {
+      if (!camera || !renderer) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  }
+
+  function formatTimer(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    const ms = Math.floor((sec % 1) * 100);
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+  }
+
+  let lastTime = performance.now();
+  function gameLoop(now) {
+    requestAnimationFrame(gameLoop);
+    const dt = Math.min((now - lastTime) / 1000, 0.1);
+    lastTime = now;
+
+    if (!isFinished) {
+      if (speed > 0.5) elapsedTime += dt;
+
+      if (isGasDown) {
+        speed += (42 - (speed * 0.18)) * dt;
+      } else if (isBrakeDown) {
+        speed -= 65 * dt;
+      } else {
+        speed -= 9 * dt;
+      }
+      speed = Math.max(0, Math.min(speed, 160));
+
+      const forwardStep = (speed / 3.6) * dt;
+      traveledDistance += forwardStep;
+      if (carRig) carRig.position.z = traveledDistance;
+
+      if (traveledDistance >= TOTAL_DISTANCE) {
+        traveledDistance = TOTAL_DISTANCE;
+        isFinished = true;
+        speed = 0;
+        document.getElementById('final-stats').textContent = `Total Time: ${formatTimer(elapsedTime)}`;
+        document.getElementById('finish-screen').style.display = 'grid';
+        triggerConfetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+      }
+
+      document.getElementById('speed-txt').textContent = Math.round(speed);
+      document.getElementById('dist-txt').textContent = `${(traveledDistance / 1000).toFixed(2)} / 1.00 km`;
+      document.getElementById('timer-txt').textContent = formatTimer(elapsedTime);
+      updateAudio();
+    }
+
+    if (camera) {
+      camera.rotation.order = "YXZ";
+      camera.rotation.y = yaw;
+      camera.rotation.x = pitch;
+
+      if (speed > 5) {
+        camera.position.y = 1.25 + Math.sin(now * 0.04) * (speed * 0.0001);
+      }
+    }
+
+    if (renderer && scene && camera) {
+      renderer.render(scene, camera);
+    }
+  }
+
+  function restartDrive() {
+    traveledDistance = 0;
+    speed = 0;
+    elapsedTime = 0;
+    isFinished = false;
+    yaw = 0;
+    pitch = 0;
+    if (carRig) carRig.position.z = 0;
+    document.getElementById('finish-screen').style.display = 'none';
+    triggerConfetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+  }
+</script>
