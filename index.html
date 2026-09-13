@@ -568,4 +568,148 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
         prevPointerY = e.clientY;
       });
 
-      window.addEventListener(
+      window.addEventListener('pointerup', () => isDragging = false);
+      window.addEventListener('pointercancel', () => isDragging = false);
+
+      function bindButton(btn, setFlag) {
+        if (!btn) return;
+        const start = e => {
+          e.preventDefault();
+          initAudio();
+          setFlag(true);
+          btn.classList.add('active');
+        };
+        const end = e => {
+          e.preventDefault();
+          setFlag(false);
+          btn.classList.remove('active');
+        };
+
+        btn.addEventListener('mousedown', start);
+        btn.addEventListener('mouseup', end);
+        btn.addEventListener('mouseleave', end);
+        btn.addEventListener('touchstart', start, { passive: false });
+        btn.addEventListener('touchend', end, { passive: false });
+        btn.addEventListener('touchcancel', end, { passive: false });
+      }
+
+      bindButton(document.getElementById('race-btn'), val => isGasDown = val);
+      bindButton(document.getElementById('brake-btn'), val => isBrakeDown = val);
+      bindButton(document.getElementById('steer-left-btn'), val => steerLeft = val);
+      bindButton(document.getElementById('steer-right-btn'), val => steerRight = val);
+
+      window.addEventListener('keydown', e => {
+        initAudio();
+        if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') isGasDown = true;
+        if (e.code === 'KeyS' || e.code === 'ArrowDown') isBrakeDown = true;
+        if (e.code === 'KeyA' || e.code === 'ArrowLeft') steerLeft = true;
+        if (e.code === 'KeyD' || e.code === 'ArrowRight') steerRight = true;
+      });
+
+      window.addEventListener('keyup', e => {
+        if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') isGasDown = false;
+        if (e.code === 'KeyS' || e.code === 'ArrowDown') isBrakeDown = false;
+        if (e.code === 'KeyA' || e.code === 'ArrowLeft') steerLeft = false;
+        if (e.code === 'KeyD' || e.code === 'ArrowRight') steerRight = false;
+      });
+
+      window.addEventListener('resize', () => {
+        if (!camera || !renderer) return;
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    function formatTimer(sec) {
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      const ms = Math.floor((sec % 1) * 100);
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+    }
+
+    let lastTime = performance.now();
+    function gameLoop(now) {
+      requestAnimationFrame(gameLoop);
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      if (!isFinished) {
+        if (speed > 0.5) elapsedTime += dt;
+
+        if (isGasDown) speed += (48 - (speed * 0.16)) * dt;
+        else if (isBrakeDown) speed -= 78 * dt;
+        else speed -= 11 * dt;
+
+        speed = Math.max(0, Math.min(speed, 175));
+        traveledDistance += (speed / 3.6) * dt;
+
+        let steerInput = 0;
+        if (steerLeft) steerInput -= 1;
+        if (steerRight) steerInput += 1;
+
+        if (speed > 1) {
+          const steerRate = (speed / 90) * 8.5;
+          carTargetX += steerInput * steerRate * dt;
+          carTargetX = Math.max(-4.8, Math.min(4.8, carTargetX));
+        }
+
+        carX += (carTargetX - carX) * 0.12;
+
+        if (carRig) {
+          carRig.position.x = carX;
+          carRig.position.z = traveledDistance;
+          carRig.rotation.z = -steerInput * 0.035;
+        }
+
+        if (steeringWheel) {
+          steeringWheel.rotation.z = -steerInput * 0.8;
+        }
+
+        if (traveledDistance >= TOTAL_DISTANCE) {
+          traveledDistance = TOTAL_DISTANCE;
+          isFinished = true;
+          speed = 0;
+          document.getElementById('final-stats').textContent = `Total Time: ${formatTimer(elapsedTime)}`;
+          document.getElementById('finish-screen').style.display = 'grid';
+          triggerConfetti({ particleCount: 160, spread: 100, origin: { y: 0.5 } });
+        }
+
+        document.getElementById('speed-txt').textContent = Math.round(speed);
+        document.getElementById('dist-txt').textContent = `${(traveledDistance / 1000).toFixed(2)} / 1.00 km`;
+        document.getElementById('timer-txt').textContent = formatTimer(elapsedTime);
+        updateAudio();
+      }
+
+      if (camera) {
+        camera.rotation.order = "YXZ";
+        camera.rotation.y = yaw;
+        camera.rotation.x = pitch;
+
+        if (speed > 5) {
+          camera.position.y = 1.35 + Math.sin(now * 0.05) * (speed * 0.0001);
+        }
+      }
+
+      if (renderer && scene && camera) renderer.render(scene, camera);
+    }
+
+    function restartDrive() {
+      traveledDistance = 0;
+      speed = 0;
+      elapsedTime = 0;
+      carX = 0;
+      carTargetX = 0;
+      isFinished = false;
+      yaw = 0;
+      pitch = 0;
+      if (carRig) {
+        carRig.position.x = 0;
+        carRig.position.z = 0;
+      }
+      document.getElementById('finish-screen').style.display = 'none';
+      triggerConfetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+    }
+  </script>
+</body>
+</html>
