@@ -802,12 +802,13 @@ function buildStoryGantries(){
     const pt=roadSpline.getPointAt(item.u);
     const tan=roadSpline.getTangentAt(item.u).normalize();
     gantry.position.copy(pt);
-    gantry.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
+    // Face toward driver so text isn't mirrored
+    gantry.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan.clone().negate());
     scene.add(gantry);
   });
 }
 
-/* GRAND FINISH ARCH (CORRECTED: SARAN) */
+/* GRAND FINISH ARCH (SARAN) */
 function buildFinishGantry(){
   const arch=new THREE.Group();
 
@@ -823,7 +824,6 @@ function buildFinishGantry(){
   ctx.lineWidth=24;
   ctx.strokeRect(16, 16, 2016, 480);
 
-  // Exact name spelled: SARAN
   ctx.font='900 106px sans-serif';
   ctx.fillStyle='#fef08a';
   ctx.textAlign='center';
@@ -854,7 +854,8 @@ function buildFinishGantry(){
   const endPt=roadSpline.getPointAt(1.0);
   const endTan=roadSpline.getTangentAt(1.0).normalize();
   arch.position.copy(endPt);
-  arch.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), endTan);
+  // Face toward approaching driver
+  arch.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), endTan.clone().negate());
   scene.add(arch);
 }
 
@@ -910,7 +911,7 @@ function buildRedSportsCar(){
   carMesh.add(carBody, carRoof, tlL, tlR, spotL, spotR);
   scene.add(carMesh);
 }
-/* FIREWORKS & CRACKER PARTICLES */
+  /* FIREWORKS & CRACKER PARTICLES */
 function launchCracker(pos){
   const count=130;
   const pGeo=new THREE.BufferGeometry();
@@ -1035,7 +1036,7 @@ function formatTimer(sec){
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
 }
 
-/* MAIN GAME ANIMATION LOOP */
+/* MAIN GAME ANIMATION LOOP (FORWARD ALIGNED) */
 let lastTime=performance.now();
 function gameLoop(now){
   requestAnimationFrame(gameLoop);
@@ -1058,57 +1059,59 @@ function gameLoop(now){
 
     if(speed>1){
       const steerRate=(speed/90)*8.5;
-      carTargetX+=steerInput*steerRate*dt;
-      carTargetX=Math.max(-ROAD_WIDTH/2 + 1.8, Math.min(ROAD_WIDTH/2 - 1.8, carTargetX));
+      carTargetX += steerInput * steerRate * dt;
+      carTargetX = Math.max(-ROAD_WIDTH/2 + 1.8, Math.min(ROAD_WIDTH/2 - 1.8, carTargetX));
     }
 
-    carX+=(carTargetX-carX)*0.12;
+    carX += (carTargetX - carX) * 0.12;
 
-    const u=THREE.MathUtils.clamp(traveledDistance/TOTAL_DISTANCE, 0.0001, 0.9999);
-    const roadPos=roadSpline.getPointAt(u);
-    const tangent=roadSpline.getTangentAt(u).normalize();
-    const normal=new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+    const u = THREE.MathUtils.clamp(traveledDistance/TOTAL_DISTANCE, 0.0001, 0.9999);
+    const roadPos = roadSpline.getPointAt(u);
+    const tangent = roadSpline.getTangentAt(u).normalize();
+    const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
 
     if(carMesh){
       carMesh.position.copy(roadPos).add(normal.clone().multiplyScalar(carX));
-      carMesh.position.y=0.0;
+      carMesh.position.y = 0.0;
 
-      const rotMat=new THREE.Matrix4().lookAt(
+      // FIXED: Look directly along tangent so car faces FORWARD down the track
+      const rotMat = new THREE.Matrix4().lookAt(
         new THREE.Vector3(0, 0, 0),
-        tangent.clone().negate(),
+        tangent,
         new THREE.Vector3(0, 1, 0)
       );
       carMesh.quaternion.setFromRotationMatrix(rotMat);
-      carWheels.forEach(w=>{ w.rotation.x+=speed*0.16; });
+      // FIXED: Forward wheel rotation
+      carWheels.forEach(w => { w.rotation.x -= speed * 0.16; });
     }
 
-    // Elevated Highway Chase Camera
+    // Elevated Highway Chase Cam Behind Vehicle
     if(camera && carMesh){
-      const localCamPos=new THREE.Vector3(0, 5.2, 9.5);
-      const targetCamWorld=carMesh.localToWorld(localCamPos);
-      const targetLookAt=carMesh.localToWorld(new THREE.Vector3(0, 1.0, -22));
+      const localCamPos = new THREE.Vector3(0, 5.2, 9.5);
+      const targetCamWorld = carMesh.localToWorld(localCamPos);
+      const targetLookAt = carMesh.localToWorld(new THREE.Vector3(0, 1.0, -22));
 
       camera.position.lerp(targetCamWorld, 0.18);
       camera.lookAt(targetLookAt);
     }
 
     // Finish Trigger
-    if(traveledDistance>=TOTAL_DISTANCE){
-      traveledDistance=TOTAL_DISTANCE;
-      isFinished=true;
-      speed=0;
+    if(traveledDistance >= TOTAL_DISTANCE){
+      traveledDistance = TOTAL_DISTANCE;
+      isFinished = true;
+      speed = 0;
 
-      const finalStats=document.getElementById('final-stats');
-      if(finalStats) finalStats.textContent=`Total Time: ${formatTimer(elapsedTime)}`;
+      const finalStats = document.getElementById('final-stats');
+      if(finalStats) finalStats.textContent = `Total Time: ${formatTimer(elapsedTime)}`;
 
-      const finishScreen=document.getElementById('finish-screen');
-      if(finishScreen) finishScreen.style.display='grid';
+      const finishScreen = document.getElementById('finish-screen');
+      if(finishScreen) finishScreen.style.display = 'grid';
 
       triggerConfetti({ particleCount:160, spread:100, origin:{y:0.5} });
 
-      const endPt=roadSpline.getPointAt(1.0);
-      fireworkTimer=setInterval(()=>{
-        const offset=new THREE.Vector3(
+      const endPt = roadSpline.getPointAt(1.0);
+      fireworkTimer = setInterval(() => {
+        const offset = new THREE.Vector3(
           (Math.random()-0.5)*30,
           14+Math.random()*12,
           (Math.random()-0.5)*20
@@ -1117,14 +1120,14 @@ function gameLoop(now){
       }, 320);
     }
 
-    const spdTxt=document.getElementById('speed-txt');
-    if(spdTxt) spdTxt.textContent=Math.round(speed);
+    const spdTxt = document.getElementById('speed-txt');
+    if(spdTxt) spdTxt.textContent = Math.round(speed);
 
-    const distTxt=document.getElementById('dist-txt');
-    if(distTxt) distTxt.textContent=`${(traveledDistance/1000).toFixed(2)} / 1.00 km`;
+    const distTxt = document.getElementById('dist-txt');
+    if(distTxt) distTxt.textContent = `${(traveledDistance/1000).toFixed(2)} / 1.00 km`;
 
-    const timerTxt=document.getElementById('timer-txt');
-    if(timerTxt) timerTxt.textContent=formatTimer(elapsedTime);
+    const timerTxt = document.getElementById('timer-txt');
+    if(timerTxt) timerTxt.textContent = formatTimer(elapsedTime);
 
     updateAudio();
   }
@@ -1137,18 +1140,18 @@ function gameLoop(now){
 }
 
 function restartDrive(){
-  traveledDistance=0;
-  speed=0;
-  elapsedTime=0;
-  carX=0;
-  carTargetX=0;
-  isFinished=false;
+  traveledDistance = 0;
+  speed = 0;
+  elapsedTime = 0;
+  carX = 0;
+  carTargetX = 0;
+  isFinished = false;
   if(fireworkTimer){
     clearInterval(fireworkTimer);
-    fireworkTimer=null;
+    fireworkTimer = null;
   }
-  const finishScreen=document.getElementById('finish-screen');
-  if(finishScreen) finishScreen.style.display='none';
+  const finishScreen = document.getElementById('finish-screen');
+  if(finishScreen) finishScreen.style.display = 'none';
   triggerConfetti({ particleCount:80, spread:70, origin:{y:0.6} });
 }
 </script>
