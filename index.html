@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
-<title>Birthday Wish & Story Drive - Saran</title>
+<title>Birthday Wish & 2 KM Drive - Saran</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
@@ -254,7 +254,7 @@ box-shadow:0 8px 25px rgba(0,0,0,.35);
 .speed-val{ font-size:32px; line-height:1; font-weight:300; font-variant-numeric:tabular-nums; color:#38bdf8; }
 .unit{ font-size:9px; letter-spacing:.13em; opacity:.55; }
 
-/* CONTROLS (WITH BACK / REVERSE PEDAL) */
+/* CONTROLS (STEERING + REVERSE + BRAKE + GAS) */
 #controls{
 position:fixed;
 left:0;
@@ -290,7 +290,7 @@ cursor:pointer;
 #brake-btn{ background:linear-gradient(180deg,rgba(220,53,69,.55),rgba(145,18,31,.9)); }
 #race-btn{ height:116px; background:linear-gradient(180deg,rgba(45,180,75,.55),rgba(20,110,42,.92)); }
 
-/* STORY POPUP MODAL (CLEAR READING MODAL) */
+/* STORY POPUP MODAL */
 #story-modal{
 position:fixed;
 inset:0;
@@ -298,7 +298,7 @@ display:none;
 place-items:center;
 padding:20px;
 z-index:60;
-background:rgba(4,8,18,.82);
+background:rgba(4,8,18,.84);
 backdrop-filter:blur(10px);
 -webkit-backdrop-filter:blur(10px);
 animation:fadeIn 0.3s ease;
@@ -382,7 +382,7 @@ backdrop-filter:blur(14px);
 
 .finish-card{
 width:100%;
-max-width:400px;
+max-width:420px;
 padding:35px 25px;
 text-align:center;
 color:white;
@@ -392,7 +392,7 @@ border:1.5px solid rgba(255,215,0,.45);
 box-shadow:0 30px 80px rgba(0,0,0,.8);
 }
 
-.finish-card h2{ font-family:'Playfair Display',serif; color:#ffd700; font-size:26px; margin-bottom:12px; line-height:1.2; }
+.finish-card h2{ font-family:'Playfair Display',serif; color:#ffd700; font-size:24px; margin-bottom:12px; line-height:1.3; }
 #final-stats{ font-size:16px; margin:12px 0; color:#38bdf8; font-weight:700; }
 .finish-sub{ opacity:.9; font-size:13.5px; line-height:1.6; color:#cbd5e1; }
 .restart-btn{
@@ -452,13 +452,13 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
   </div>
 </div>
 
-<!-- 3D GAME STAGE -->
+<!-- 3D GAME STAGE (2 KM GOAL) -->
 <div id="game-stage">
   <div id="webgl-container"></div>
   <div id="hud">
     <div class="panel">
       <div class="dist-label">Distance to Goal</div>
-      <div class="dist-val" id="dist-txt">0.00 / 1.00 km</div>
+      <div class="dist-val" id="dist-txt">0.00 / 2.00 km</div>
       <div class="timer-val" id="timer-txt">00:00.00</div>
     </div>
     <div class="panel speed-panel">
@@ -491,16 +491,16 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
 
   <div id="finish-screen">
     <div class="finish-card">
-      <h2>🎉 1 KM FINISHED!</h2>
+      <h2>🎉 2 KM COMPLETED!</h2>
       <p id="final-stats">Total Time: 00:00.00</p>
-      <p class="finish-sub">A very happy birthday to my first boyfriend cum girlfriend, the one and only...<br><strong style="color:#ffd700;font-size:16px;">MR. SARAN. 🎂✨💕</strong></p>
+      <p class="finish-sub">Happy birthday to my first boyfriend cum girlfriend, the one and only…<br><strong style="color:#ffd700;font-size:17px;">MR. SARAN 🎂✨💕</strong></p>
       <button class="restart-btn" id="restart-btn">DRIVE AGAIN 🏎️</button>
     </div>
   </div>
 </div>
 
 <script>
-try{
+  try{
   if(window.Telegram && window.Telegram.WebApp){
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
@@ -600,7 +600,19 @@ function startJourney(){
 document.getElementById("page1")?.addEventListener("click", switchToWishes);
 document.getElementById("page2")?.addEventListener("click", startJourney);
 
-/* ALL 13 STORY CHAPTERS */
+/* 2 KM GAME PARAMETERS & CHAPTER DATA */
+const TOTAL_DISTANCE = 2000; // Increased to 2 KM for spacious signboard placement
+const ROAD_WIDTH = 14;
+let speed = 0, targetSpeed = 0, traveledDistance = 0, elapsedTime = 0, isFinished = false;
+let isGasDown = false, isBrakeDown = false, isRevDown = false, steerLeft = false, steerRight = false;
+let carX = 0, carTargetX = 0, gameInitialized = false;
+let isReadingStory = false;
+let unlockedChapters = {};
+
+// Optional custom image URL for the 50% left side of story boards
+const BOARD_IMAGE_URL = "";
+
+// 12 Story Chapters spaced evenly across the 2 KM highway
 const STORY_CHAPTERS = [
   {
     u: 0.08,
@@ -615,81 +627,66 @@ const STORY_CHAPTERS = [
     text: "It has been almost a complete year with you.\n\nAnd honestly, if someone had told me that a completely random and boring day would eventually lead to such a bond, I probably wouldn’t have believed them.\n\nI was waiting for someone that day and had absolutely nothing to do.\n\nThen someone dropped a link to a GC named “Sweet World” in my DM.\n\nSo… I joined."
   },
   {
-    u: 0.22,
+    u: 0.23,
     chap: "Chapter 3",
     title: "“Hy, Hlo”",
     text: "That was our first interaction.\n\nJust a simple “hy, hlo.”\n\nI genuinely never thought that joining that GC would eventually lead to me having such a great bond with someone.\n\nDays passed…\n\nAnd somehow, the random person I met that day slowly became someone I actually looked forward to talking to."
   },
   {
-    u: 0.29,
+    u: 0.31,
     chap: "Chapter 4",
     title: "Just 20 Days",
     text: "I still remember you once saying in the group:\n\n“Aate hain aur sabke maje leke chale jaate hain.”\n\nI genuinely smiled over it that day.\n\nAnd idk how…\n\nBut within just 20 days, you became an important part of my life.\n\nIt’s actually funny how quickly some people can become important without you even realising when it happened."
   },
   {
-    u: 0.36,
+    u: 0.39,
     chap: "Chapter 5",
     title: "And Then Came the Kalesh… 😂",
     text: "From calling you “bhaiya”…\n\nTo having our first major argument on October 7, 2025.\n\nFrom saving my first Telegram contact as:\n“SSSB Super Senior Saran Bhaiya”\n\nTo knowing your favourite song:\n“Koi Apna Hoga.”\n\nAnd then… deleting my account for the first time.\n\nThere have been quite a few chapters in this story. 😂"
   },
   {
-    u: 0.44,
+    u: 0.47,
     chap: "Chapter 6",
     title: "Our Bond Was Never Exactly Peaceful",
     text: "Majorly, our bond has been about arguments, differences of opinion, and random kalesh.\n\nBut somehow…\n\nWe still shared a bond.\nA special bond.\n\nWaise bhi, kuch log zindagi mein kalesh wale bhi hone chahiye.\n\nExcess sweetness causes diabetes. 😂"
   },
   {
-    u: 0.51,
+    u: 0.55,
     chap: "Chapter 7",
     title: "The Person Behind All the Kalesh",
     text: "You are honestly a pure soul when it comes to your feelings.\n\nYou can never really pretend to be fake with your close ones.\n\nAnd I genuinely respect that about you.\n\nMaybe that’s one of the reasons why, despite all the arguments and differences, the bond still remained."
   },
   {
-    u: 0.58,
+    u: 0.63,
     chap: "Chapter 8",
     title: "March 18, 2026",
     text: "Then came March 18, 2026.\n\nI got a text from you after a long time.\n\nAnd honestly… That was genuinely a great relief to me.\n\nI don’t know exactly when it happened, or how it happened…\n\nBut somehow, you became an unattachable person in my life."
   },
   {
-    u: 0.65,
+    u: 0.71,
     chap: "Chapter 9",
     title: "Your Special Talent 😂",
     text: "And of course…\n\nYour emotional manipulation skills are definitely one of the qualities that make you unique. 😂\n\nYou are the one who once told me:\n“Don’t trust anyone in such a short duration.”\n\nBut khud hi kabhi-kabhi ye use karna bhul jaate ho. 😂\n\nThe irony is honestly impressive."
   },
   {
-    u: 0.72,
+    u: 0.79,
     chap: "Chapter 10",
     title: "One Serious Thing ❤️",
     text: "Jokes apart…\n\nMay you have a genuinely great life ahead.\n\nAnd TG chhodo, exam ke liye prepare karo. 😂\nPata hai aap kam aate ho, but still, try to minimise that time as much as possible.\n\nAnd… Sorry. For whatever I did. I’m extremely sorry.\nI know some things hurt you, and I also know that simply saying sorry isn’t enough.\n\nBut still… Extremely sorry. ❤️"
   },
   {
-    u: 0.79,
+    u: 0.86,
     chap: "Chapter 11",
     title: "Some Birthday Instructions 😂",
     text: "Okay, enough emotional drama.\n\nIt’s your birthday yaar.\n\nYou’re about 22–23 years old now…\n\nSo jldi se paise kamao…\naur mere account mein daalo. 😂💸\n\nThis is probably the most important blessing I have for you."
   },
   {
-    u: 0.86,
+    u: 0.93,
     chap: "Chapter 12",
     title: "About Your Gift 🎁",
     text: "And haan…\n\nKoi gift chahiye toh bata sakte ho.\n\nNakhre karne ki zarurat nahi hai ki:\n“Kuch nahi chahiye”, “Nothing, it’s okay” and all. 😂\n\nMana aapka birthday hai…\nAnd harkaton se ladki ho mere liye…\n\nBut still, gift bata dena. Kya chahiye? 🎁😂"
-  },
-  {
-    u: 0.93,
-    chap: "Chapter 13",
-    title: "The Final Chapter ❤️😂",
-    text: "And after one whole year of:\n\nRandom beginnings… “Hy, hlo”… Arguments… Differences of opinion… Kalesh… Random conversations… Memories… And somehow becoming unattachable…\n\nThere’s only one thing left to say:\n\nA very happy birthday to my first boyfriend cum girlfriend, the one and only…\n\nMR. SARAN. 🎂✨💕"
   }
 ];
-
-/* GAME STATE VARIABLES */
-const TOTAL_DISTANCE = 1000;
-const ROAD_WIDTH = 14;
-let speed = 0, targetSpeed = 0, traveledDistance = 0, elapsedTime = 0, isFinished = false;
-let isGasDown = false, isBrakeDown = false, isRevDown = false, steerLeft = false, steerRight = false;
-let carX = 0, carTargetX = 0, gameInitialized = false;
-let isReadingStory = false;
-let unlockedChapters = {};
 
 /* AUDIO ENGINE */
 let audioCtx = null, engineOsc = null, engineGain = null;
@@ -724,7 +721,7 @@ function updateAudio(){
     engineGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, .08);
   }catch(e){}
 }
-  /* 3D ENGINE CORE */
+  /* 3D ENGINE CORE (EXTENDED 2 KM PASS) */
 let scene, camera, renderer, roadSpline, carMesh, carWheels = [];
 let fireworkTimer = null;
 const activeCrackers = [];
@@ -737,7 +734,7 @@ function initGameEngine(){
   const container = document.getElementById('webgl-container');
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0e1b2e);
-  scene.fog = new THREE.Fog(0x0e1b2e, 90, 500);
+  scene.fog = new THREE.Fog(0x0e1b2e, 90, 520);
 
   camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 800);
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -750,15 +747,15 @@ function initGameEngine(){
   moon.position.set(60, 120, -80);
   scene.add(moon);
 
-  // Smooth zigzag mountain road points
+  // 2 KM Winding Mountain Curve Spline
   const curvePoints = [
     new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(35, 0, -120),
-    new THREE.Vector3(-38, 0, -260),
-    new THREE.Vector3(40, 0, -420),
-    new THREE.Vector3(-35, 0, -580),
-    new THREE.Vector3(38, 0, -740),
-    new THREE.Vector3(-25, 0, -880),
+    new THREE.Vector3(38, 0, -250),
+    new THREE.Vector3(-42, 0, -550),
+    new THREE.Vector3(45, 0, -880),
+    new THREE.Vector3(-38, 0, -1200),
+    new THREE.Vector3(42, 0, -1500),
+    new THREE.Vector3(-30, 0, -1780),
     new THREE.Vector3(0, 0, -TOTAL_DISTANCE)
   ];
 
@@ -766,8 +763,8 @@ function initGameEngine(){
   roadSpline.curveType = 'catmullrom';
   roadSpline.tension = 0.5;
 
-  // Road geometry
-  const ROAD_SEGMENTS = 700;
+  // Road geometry stretched over 2000 m
+  const ROAD_SEGMENTS = 1000;
   const roadVerts = [], roadUVs = [], roadIndices = [];
 
   for(let i = 0; i <= ROAD_SEGMENTS; i++){
@@ -797,7 +794,7 @@ function initGameEngine(){
   roadGeo.setIndex(roadIndices);
   roadGeo.computeVertexNormals();
 
-  // Crisp grey asphalt texture
+  // High-visibility Asphalt Texture
   const rCan = document.createElement('canvas');
   rCan.width = 512;
   rCan.height = 512;
@@ -822,17 +819,17 @@ function initGameEngine(){
   const roadTex = new THREE.CanvasTexture(rCan);
   roadTex.wrapS = THREE.RepeatWrapping;
   roadTex.wrapT = THREE.RepeatWrapping;
-  roadTex.repeat.set(1, 45);
+  roadTex.repeat.set(1, 80);
 
   const roadMesh = new THREE.Mesh(roadGeo, new THREE.MeshLambertMaterial({ map: roadTex, side: THREE.DoubleSide }));
   scene.add(roadMesh);
 
-  // Forest Grass Terrain
-  const terrainGeo = new THREE.PlaneGeometry(1600, 1600);
+  // Extended Forest Ground
+  const terrainGeo = new THREE.PlaneGeometry(2200, 2600);
   const terrainMat = new THREE.MeshLambertMaterial({ color: 0x163620 });
   const terrain = new THREE.Mesh(terrainGeo, terrainMat);
   terrain.rotation.x = -Math.PI / 2;
-  terrain.position.set(0, -0.05, -500);
+  terrain.position.set(0, -0.05, -1000);
   scene.add(terrain);
 
   buildForestInfrastructure();
@@ -844,20 +841,20 @@ function initGameEngine(){
   requestAnimationFrame(gameLoop);
 }
 
-/* SIDEWALKS, STREETLIGHTS & TREES */
+/* SIDEWALKS, STREETLAMPS & TREES */
 function buildForestInfrastructure(){
   const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x64748b });
   const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.7, roughness: 0.3 });
   const postMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
 
-  for(let i = 0; i <= 140; i++){
-    const u = i / 140;
+  for(let i = 0; i <= 240; i++){
+    const u = i / 240;
     const pt = roadSpline.getPointAt(u);
     const tan = roadSpline.getTangentAt(u).normalize();
     const norm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
 
     [-1, 1].forEach(side => {
-      const curb = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 7.5), sidewalkMat);
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 8), sidewalkMat);
       curb.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH / 2 + 0.9) * side));
       curb.position.y = 0.15;
       curb.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
@@ -888,7 +885,7 @@ function buildForestInfrastructure(){
   const folMat = new THREE.MeshLambertMaterial({ color: 0x0e3820 });
   const trkMat = new THREE.MeshLambertMaterial({ color: 0x24160d });
 
-  for(let i = 0; i < 300; i++){
+  for(let i = 0; i < 480; i++){
     const u = Math.random();
     const pt = roadSpline.getPointAt(u);
     const tan = roadSpline.getTangentAt(u).normalize();
@@ -912,42 +909,100 @@ function buildForestInfrastructure(){
   }
 }
 
-/* 13 OVERHEAD STORY GANTRIES ACROSS THE 1 KM PASS */
+/* 50/50 SPLIT STORY BOARDS (LEFT: IMAGE / RIGHT: WHITE) */
 function buildStoryGantries(){
-  STORY_CHAPTERS.forEach((item, index) => {
+  let preloadedImg = null;
+  if(BOARD_IMAGE_URL){
+    preloadedImg = new Image();
+    preloadedImg.crossOrigin = "anonymous";
+    preloadedImg.src = BOARD_IMAGE_URL;
+  }
+
+  STORY_CHAPTERS.forEach((item) => {
     const gCan = document.createElement('canvas');
     gCan.width = 1024;
-    gCan.height = 360;
+    gCan.height = 420;
     const ctx = gCan.getContext('2d');
 
-    ctx.fillStyle = '#065f46';
-    ctx.fillRect(0, 0, 1024, 360);
-
-    ctx.fillStyle = '#d97706';
-    ctx.fillRect(0, 0, 1024, 60);
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 32px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${item.chap.toUpperCase()}: ${item.title.toUpperCase()}`, 512, 42);
-
+    // RIGHT 50%: Pure White Background (#ffffff)
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 38px sans-serif';
-    ctx.fillText("TAP OR DRIVE CLOSE TO READ CHAPTER", 512, 210);
+    ctx.fillRect(512, 0, 512, 420);
+
+    // RIGHT 50% Text Styling
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(512, 0, 512, 54);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 26px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(item.chap.toUpperCase(), 768, 36);
+
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 34px sans-serif';
+    ctx.fillText(item.title, 768, 140);
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 24px sans-serif';
+    ctx.fillText("TAP OR DRIVE CLOSE", 768, 240);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillText("TO READ FULL STORY ✨", 768, 285);
+
+    // LEFT 50%: Image Space
+    function drawLeftImage(){
+      if(preloadedImg && preloadedImg.complete && preloadedImg.naturalWidth !== 0){
+        ctx.drawImage(preloadedImg, 0, 0, 512, 420);
+      } else {
+        // Luxury memory portrait card placeholder
+        const grad = ctx.createLinearGradient(0, 0, 512, 420);
+        grad.addColorStop(0, '#1e293b');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 512, 420);
+
+        // Gold frame in left half
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(20, 20, 472, 380);
+
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '70px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText("📸", 256, 190);
+
+        ctx.font = 'bold 30px sans-serif';
+        ctx.fillStyle = '#fef08a';
+        ctx.fillText("SPECIAL MEMORY", 256, 260);
+      }
+      tex.needsUpdate = true;
+    }
+
+    drawLeftImage();
+    if(preloadedImg && !preloadedImg.complete){
+      preloadedImg.onload = drawLeftImage;
+    }
+
+    // Outer border dividing the two halves
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(0, 0, 1024, 420);
+    ctx.beginPath();
+    ctx.moveTo(512, 0); ctx.lineTo(512, 420);
+    ctx.stroke();
 
     const tex = new THREE.CanvasTexture(gCan);
     const signMesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(12, 4.2),
+      new THREE.PlaneGeometry(13, 5.2),
       new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
     );
-    signMesh.position.y = 6.8;
+    signMesh.position.y = 7.2;
 
     const steelMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.8 });
-    const pL = new THREE.Mesh(new THREE.BoxGeometry(0.6, 9, 0.6), steelMat);
-    pL.position.set(-7.5, 4.5, 0);
-    const pR = new THREE.Mesh(new THREE.BoxGeometry(0.6, 9, 0.6), steelMat);
-    pR.position.set(7.5, 4.5, 0);
-    const beam = new THREE.Mesh(new THREE.BoxGeometry(16, 0.6, 0.8), steelMat);
-    beam.position.set(0, 9.0, 0);
+    const pL = new THREE.Mesh(new THREE.BoxGeometry(0.6, 9.5, 0.6), steelMat);
+    pL.position.set(-8.0, 4.75, 0);
+    const pR = new THREE.Mesh(new THREE.BoxGeometry(0.6, 9.5, 0.6), steelMat);
+    pR.position.set(8.0, 4.75, 0);
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(17, 0.6, 0.8), steelMat);
+    beam.position.set(0, 9.5, 0);
 
     const gantry = new THREE.Group();
     gantry.add(signMesh, pL, pR, beam);
@@ -960,46 +1015,65 @@ function buildStoryGantries(){
   });
 }
 
-/* FINISH ARCH (HAPPY BIRTHDAY, SARAN) */
+/* THE LAST GANTRY (BLACK-GREYISH SHADE & GOLDEN TEXT) */
 function buildFinishGantry(){
   const arch = new THREE.Group();
 
   const fCan = document.createElement('canvas');
   fCan.width = 2048;
-  fCan.height = 512;
+  fCan.height = 640;
   const ctx = fCan.getContext('2d');
 
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, 2048, 512);
+  // Black-greyish shade background
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, 640);
+  bgGrad.addColorStop(0, '#1f2229');
+  bgGrad.addColorStop(1, '#121418');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, 2048, 640);
 
-  ctx.strokeStyle = '#f59e0b';
-  ctx.lineWidth = 24;
-  ctx.strokeRect(16, 16, 2016, 480);
+  // Golden glowing border
+  ctx.strokeStyle = '#ffd700';
+  ctx.lineWidth = 22;
+  ctx.strokeRect(18, 18, 2012, 604);
 
-  ctx.font = '900 106px sans-serif';
-  ctx.fillStyle = '#fef08a';
+  // Inner subtle golden line
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(36, 36, 1976, 568);
+
+  // GOLDEN TYPOGRAPHY ON LAST BOARD
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('HAPPY BIRTHDAY, SARAN', 1024, 220);
 
-  ctx.font = '700 42px sans-serif';
+  // Subtitle / Intro
+  ctx.font = '600 52px "Plus Jakarta Sans", sans-serif';
+  ctx.fillStyle = '#fef08a';
+  ctx.fillText("Happy birthday to my first boyfriend cum girlfriend,", 1024, 180);
+
+  // "the one and only…"
+  ctx.font = 'italic 58px "Playfair Display", serif';
   ctx.fillStyle = '#fbbf24';
-  ctx.fillText('★ A JOURNEY WELL TRAVELED ★', 1024, 340);
+  ctx.fillText("the one and only…", 1024, 280);
+
+  // "MR. SARAN"
+  ctx.font = '900 110px "Plus Jakarta Sans", sans-serif';
+  ctx.fillStyle = '#ffd700';
+  ctx.fillText("MR. SARAN 🎂✨💕", 1024, 430);
 
   const tex = new THREE.CanvasTexture(fCan);
   const board = new THREE.Mesh(
-    new THREE.PlaneGeometry(16, 4.4),
+    new THREE.PlaneGeometry(16.5, 5.2),
     new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
   );
-  board.position.y = 7.2;
+  board.position.y = 7.5;
 
-  const steelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8 });
-  const pL = new THREE.Mesh(new THREE.BoxGeometry(0.8, 10, 0.8), steelMat);
-  pL.position.set(-8.5, 5, 0);
-  const pR = new THREE.Mesh(new THREE.BoxGeometry(0.8, 10, 0.8), steelMat);
-  pR.position.set(8.5, 5, 0);
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(18, 0.8, 1), steelMat);
-  beam.position.set(0, 9.6, 0);
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x333742, metalness: 0.85, roughness: 0.3 });
+  const pL = new THREE.Mesh(new THREE.BoxGeometry(0.8, 10.5, 0.8), steelMat);
+  pL.position.set(-8.8, 5.25, 0);
+  const pR = new THREE.Mesh(new THREE.BoxGeometry(0.8, 10.5, 0.8), steelMat);
+  pR.position.set(8.8, 5.25, 0);
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(18.5, 0.8, 1), steelMat);
+  beam.position.set(0, 10.1, 0);
 
   arch.add(board, pL, pR, beam);
 
@@ -1064,7 +1138,7 @@ function buildRedSportsCar(){
 }
   /* FIREWORKS / CRACKER PARTICLES */
 function launchCracker(pos){
-  const count = 130;
+  const count = 140;
   const pGeo = new THREE.BufferGeometry();
   const coords = new Float32Array(count * 3);
   const vels = [];
@@ -1126,7 +1200,7 @@ function updateCrackers(delta){
   }
 }
 
-/* STORY POPUP DISPLAY & RESUME */
+/* STORY POPUP MODAL */
 function showStoryModal(chapterData){
   isReadingStory = true;
   document.getElementById('story-chap-tag').textContent = chapterData.chap.toUpperCase();
@@ -1142,7 +1216,7 @@ document.getElementById('story-continue-btn')?.addEventListener('click', () => {
   isReadingStory = false;
 });
 
-/* EVENT LISTENERS & INPUTS */
+/* INPUT LISTENERS */
 function setupEventListeners(){
   function bindButton(btn, setFlag){
     if(!btn) return;
@@ -1216,18 +1290,16 @@ function gameLoop(now){
   if(!isFinished && !isReadingStory){
     if(Math.abs(speed) > 0.5) elapsedTime += dt;
 
-    // Smooth forward, reverse, and braking physics
     if(isGasDown){
-      targetSpeed = 110;
+      targetSpeed = 115;
       speed += (targetSpeed - speed) * 3.5 * dt;
     } else if(isRevDown){
-      targetSpeed = -45; // Smooth reverse motion
+      targetSpeed = -45; // Backwards movement
       speed += (targetSpeed - speed) * 3.5 * dt;
     } else if(isBrakeDown){
       targetSpeed = 0;
       speed += (0 - speed) * 8.0 * dt;
     } else {
-      // Natural rolling friction
       targetSpeed = 0;
       speed += (0 - speed) * 1.8 * dt;
     }
@@ -1237,7 +1309,7 @@ function gameLoop(now){
     traveledDistance += (speed / 3.6) * dt;
     traveledDistance = Math.max(0, traveledDistance);
 
-    // Dynamic steering proportional to speed
+    // Proportional steering
     let steerInput = 0;
     if(steerLeft) steerInput -= 1;
     if(steerRight) steerInput += 1;
@@ -1249,10 +1321,8 @@ function gameLoop(now){
       carTargetX = Math.max(-ROAD_WIDTH / 2 + 1.8, Math.min(ROAD_WIDTH / 2 - 1.8, carTargetX));
     }
 
-    // Dampened lateral lerp for butter-smooth road holding
     carX += (carTargetX - carX) * (1 - Math.exp(-14 * dt));
 
-    // Spline progression
     const u = THREE.MathUtils.clamp(traveledDistance / TOTAL_DISTANCE, 0.0001, 0.9999);
     const roadPos = roadSpline.getPointAt(u);
     const tangent = roadSpline.getTangentAt(u).normalize();
@@ -1262,19 +1332,17 @@ function gameLoop(now){
       carMesh.position.copy(roadPos).add(normal.clone().multiplyScalar(carX));
       carMesh.position.y = 0.0;
 
-      // Forward alignment along curve
+      // Car faces forward
       const rotMat = new THREE.Matrix4().lookAt(
         new THREE.Vector3(0, 0, 0),
         tangent,
         new THREE.Vector3(0, 1, 0)
       );
       carMesh.quaternion.setFromRotationMatrix(rotMat);
-
-      // Rotate wheels smoothly with forward/reverse velocity
       carWheels.forEach(w => { w.rotation.x -= speed * 0.16; });
     }
 
-    // Elevated Chase Camera with Smooth Damping
+    // Camera chase view
     if(camera && carMesh){
       const localCamPos = new THREE.Vector3(0, 5.2, 9.5);
       const targetCamWorld = carMesh.localToWorld(localCamPos);
@@ -1284,15 +1352,15 @@ function gameLoop(now){
       camera.lookAt(targetLookAt);
     }
 
-    // Story Trigger Detection along the Highway
+    // Story Trigger when driving close to each gantry
     STORY_CHAPTERS.forEach((item, index) => {
-      if(!unlockedChapters[index] && Math.abs(u - item.u) < 0.012 && speed > 0){
+      if(!unlockedChapters[index] && Math.abs(u - item.u) < 0.008 && speed > 0){
         unlockedChapters[index] = true;
         showStoryModal(item);
       }
     });
 
-    // Finish Trigger
+    // Finish Trigger at 2.00 KM
     if(traveledDistance >= TOTAL_DISTANCE){
       traveledDistance = TOTAL_DISTANCE;
       isFinished = true;
@@ -1321,7 +1389,7 @@ function gameLoop(now){
     if(spdTxt) spdTxt.textContent = Math.round(speed);
 
     const distTxt = document.getElementById('dist-txt');
-    if(distTxt) distTxt.textContent = `${(traveledDistance / 1000).toFixed(2)} / 1.00 km`;
+    if(distTxt) distTxt.textContent = `${(traveledDistance / 1000).toFixed(2)} / 2.00 km`;
 
     const timerTxt = document.getElementById('timer-txt');
     if(timerTxt) timerTxt.textContent = formatTimer(elapsedTime);
