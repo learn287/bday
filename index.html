@@ -601,7 +601,7 @@ document.getElementById("page1")?.addEventListener("click", switchToWishes);
 document.getElementById("page2")?.addEventListener("click", startJourney);
 
 /* 2 KM GAME PARAMETERS & CHAPTER DATA */
-const TOTAL_DISTANCE = 2000; // Increased to 2 KM for spacious signboard placement
+const TOTAL_DISTANCE = 2000;
 const ROAD_WIDTH = 14;
 let speed = 0, targetSpeed = 0, traveledDistance = 0, elapsedTime = 0, isFinished = false;
 let isGasDown = false, isBrakeDown = false, isRevDown = false, steerLeft = false, steerRight = false;
@@ -609,10 +609,6 @@ let carX = 0, carTargetX = 0, gameInitialized = false;
 let isReadingStory = false;
 let unlockedChapters = {};
 
-// Optional custom image URL for the 50% left side of story boards
-const BOARD_IMAGE_URL = "";
-
-// 12 Story Chapters spaced evenly across the 2 KM highway
 const STORY_CHAPTERS = [
   {
     u: 0.08,
@@ -721,7 +717,7 @@ function updateAudio(){
     engineGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, .08);
   }catch(e){}
 }
-  /* 3D ENGINE CORE (EXTENDED 2 KM PASS) */
+  /* 3D ENGINE CORE */
 let scene, camera, renderer, roadSpline, carMesh, carWheels = [];
 let fireworkTimer = null;
 const activeCrackers = [];
@@ -734,7 +730,7 @@ function initGameEngine(){
   const container = document.getElementById('webgl-container');
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0e1b2e);
-  scene.fog = new THREE.Fog(0x0e1b2e, 90, 520);
+  scene.fog = new THREE.Fog(0x0e1b2e, 100, 550);
 
   camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 800);
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -747,7 +743,7 @@ function initGameEngine(){
   moon.position.set(60, 120, -80);
   scene.add(moon);
 
-  // 2 KM Winding Mountain Curve Spline
+  // 2 KM Winding Highway Spline
   const curvePoints = [
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(38, 0, -250),
@@ -763,7 +759,6 @@ function initGameEngine(){
   roadSpline.curveType = 'catmullrom';
   roadSpline.tension = 0.5;
 
-  // Road geometry stretched over 2000 m
   const ROAD_SEGMENTS = 1000;
   const roadVerts = [], roadUVs = [], roadIndices = [];
 
@@ -794,7 +789,6 @@ function initGameEngine(){
   roadGeo.setIndex(roadIndices);
   roadGeo.computeVertexNormals();
 
-  // High-visibility Asphalt Texture
   const rCan = document.createElement('canvas');
   rCan.width = 512;
   rCan.height = 512;
@@ -824,7 +818,6 @@ function initGameEngine(){
   const roadMesh = new THREE.Mesh(roadGeo, new THREE.MeshLambertMaterial({ map: roadTex, side: THREE.DoubleSide }));
   scene.add(roadMesh);
 
-  // Extended Forest Ground
   const terrainGeo = new THREE.PlaneGeometry(2200, 2600);
   const terrainMat = new THREE.MeshLambertMaterial({ color: 0x163620 });
   const terrain = new THREE.Mesh(terrainGeo, terrainMat);
@@ -838,10 +831,23 @@ function initGameEngine(){
   buildRedSportsCar();
 
   setupEventListeners();
+
+  // Instant First-Frame Placement: Pre-render scene so it is never black
+  const initPt = roadSpline.getPointAt(0.0001);
+  const initTan = roadSpline.getTangentAt(0.0001).normalize();
+  carMesh.position.copy(initPt);
+  carMesh.position.y = 0.0;
+  carMesh.lookAt(initPt.clone().add(initTan));
+
+  const initCamWorld = carMesh.localToWorld(new THREE.Vector3(0, 5.2, 9.5));
+  camera.position.copy(initCamWorld);
+  camera.lookAt(carMesh.localToWorld(new THREE.Vector3(0, 1.0, -22)));
+
+  renderer.render(scene, camera);
   requestAnimationFrame(gameLoop);
 }
 
-/* SIDEWALKS, STREETLAMPS & TREES */
+/* SIDEWALKS, STREETLIGHTS & PINE TREES */
 function buildForestInfrastructure(){
   const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x64748b });
   const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.7, roughness: 0.3 });
@@ -909,26 +915,38 @@ function buildForestInfrastructure(){
   }
 }
 
-/* 50/50 SPLIT STORY BOARDS (LEFT: IMAGE / RIGHT: WHITE) */
+/* 50/50 SPLIT STORY GANTRIES (LEFT: IMAGE CARD / RIGHT: WHITE STORY) */
 function buildStoryGantries(){
-  let preloadedImg = null;
-  if(BOARD_IMAGE_URL){
-    preloadedImg = new Image();
-    preloadedImg.crossOrigin = "anonymous";
-    preloadedImg.src = BOARD_IMAGE_URL;
-  }
-
   STORY_CHAPTERS.forEach((item) => {
     const gCan = document.createElement('canvas');
     gCan.width = 1024;
     gCan.height = 420;
     const ctx = gCan.getContext('2d');
 
+    // LEFT 50%: Elegant Photo Frame Card
+    const grad = ctx.createLinearGradient(0, 0, 512, 420);
+    grad.addColorStop(0, '#1e293b');
+    grad.addColorStop(1, '#0f172a');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 420);
+
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(20, 20, 472, 380);
+
+    ctx.fillStyle = '#ffd700';
+    ctx.font = '72px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText("📸", 256, 185);
+
+    ctx.font = 'bold 30px sans-serif';
+    ctx.fillStyle = '#fef08a';
+    ctx.fillText("SPECIAL MEMORY", 256, 260);
+
     // RIGHT 50%: Pure White Background (#ffffff)
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(512, 0, 512, 420);
 
-    // RIGHT 50% Text Styling
     ctx.fillStyle = '#d97706';
     ctx.fillRect(512, 0, 512, 54);
     ctx.fillStyle = '#ffffff';
@@ -942,46 +960,12 @@ function buildStoryGantries(){
 
     ctx.fillStyle = '#64748b';
     ctx.font = '600 24px sans-serif';
-    ctx.fillText("TAP OR DRIVE CLOSE", 768, 240);
+    ctx.fillText("DRIVE CLOSE OR TAP", 768, 240);
     ctx.fillStyle = '#f59e0b';
     ctx.font = 'bold 28px sans-serif';
-    ctx.fillText("TO READ FULL STORY ✨", 768, 285);
+    ctx.fillText("TO READ STORY ✨", 768, 285);
 
-    // LEFT 50%: Image Space
-    function drawLeftImage(){
-      if(preloadedImg && preloadedImg.complete && preloadedImg.naturalWidth !== 0){
-        ctx.drawImage(preloadedImg, 0, 0, 512, 420);
-      } else {
-        // Luxury memory portrait card placeholder
-        const grad = ctx.createLinearGradient(0, 0, 512, 420);
-        grad.addColorStop(0, '#1e293b');
-        grad.addColorStop(1, '#0f172a');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, 512, 420);
-
-        // Gold frame in left half
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 10;
-        ctx.strokeRect(20, 20, 472, 380);
-
-        ctx.fillStyle = '#ffd700';
-        ctx.font = '70px serif';
-        ctx.textAlign = 'center';
-        ctx.fillText("📸", 256, 190);
-
-        ctx.font = 'bold 30px sans-serif';
-        ctx.fillStyle = '#fef08a';
-        ctx.fillText("SPECIAL MEMORY", 256, 260);
-      }
-      tex.needsUpdate = true;
-    }
-
-    drawLeftImage();
-    if(preloadedImg && !preloadedImg.complete){
-      preloadedImg.onload = drawLeftImage;
-    }
-
-    // Outer border dividing the two halves
+    // Center divider & outer border
     ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 6;
     ctx.strokeRect(0, 0, 1024, 420);
@@ -1015,7 +999,7 @@ function buildStoryGantries(){
   });
 }
 
-/* THE LAST GANTRY (BLACK-GREYISH SHADE & GOLDEN TEXT) */
+/* THE LAST GANTRY: BLACK-GREYISH SHADE & GOLDEN TEXT */
 function buildFinishGantry(){
   const arch = new THREE.Group();
 
@@ -1024,10 +1008,10 @@ function buildFinishGantry(){
   fCan.height = 640;
   const ctx = fCan.getContext('2d');
 
-  // Black-greyish shade background
+  // Black-greyish shade gradient
   const bgGrad = ctx.createLinearGradient(0, 0, 0, 640);
-  bgGrad.addColorStop(0, '#1f2229');
-  bgGrad.addColorStop(1, '#121418');
+  bgGrad.addColorStop(0, '#222630');
+  bgGrad.addColorStop(1, '#111317');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, 2048, 640);
 
@@ -1036,26 +1020,22 @@ function buildFinishGantry(){
   ctx.lineWidth = 22;
   ctx.strokeRect(18, 18, 2012, 604);
 
-  // Inner subtle golden line
-  ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
+  ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
   ctx.lineWidth = 6;
   ctx.strokeRect(36, 36, 1976, 568);
 
-  // GOLDEN TYPOGRAPHY ON LAST BOARD
+  // Golden typography
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  // Subtitle / Intro
   ctx.font = '600 52px "Plus Jakarta Sans", sans-serif';
   ctx.fillStyle = '#fef08a';
   ctx.fillText("Happy birthday to my first boyfriend cum girlfriend,", 1024, 180);
 
-  // "the one and only…"
   ctx.font = 'italic 58px "Playfair Display", serif';
   ctx.fillStyle = '#fbbf24';
   ctx.fillText("the one and only…", 1024, 280);
 
-  // "MR. SARAN"
   ctx.font = '900 110px "Plus Jakarta Sans", sans-serif';
   ctx.fillStyle = '#ffd700';
   ctx.fillText("MR. SARAN 🎂✨💕", 1024, 430);
@@ -1084,7 +1064,7 @@ function buildFinishGantry(){
   scene.add(arch);
 }
 
-/* 3D RED SPORTS COUPE */
+/* 3D RED SPORTS CAR */
 function buildRedSportsCar(){
   carMesh = new THREE.Group();
 
@@ -1200,7 +1180,7 @@ function updateCrackers(delta){
   }
 }
 
-/* STORY POPUP MODAL */
+/* STORY POPUP DISPLAY & RESUME */
 function showStoryModal(chapterData){
   isReadingStory = true;
   document.getElementById('story-chap-tag').textContent = chapterData.chap.toUpperCase();
@@ -1294,7 +1274,7 @@ function gameLoop(now){
       targetSpeed = 115;
       speed += (targetSpeed - speed) * 3.5 * dt;
     } else if(isRevDown){
-      targetSpeed = -45; // Backwards movement
+      targetSpeed = -45;
       speed += (targetSpeed - speed) * 3.5 * dt;
     } else if(isBrakeDown){
       targetSpeed = 0;
@@ -1309,7 +1289,6 @@ function gameLoop(now){
     traveledDistance += (speed / 3.6) * dt;
     traveledDistance = Math.max(0, traveledDistance);
 
-    // Proportional steering
     let steerInput = 0;
     if(steerLeft) steerInput -= 1;
     if(steerRight) steerInput += 1;
@@ -1332,17 +1311,12 @@ function gameLoop(now){
       carMesh.position.copy(roadPos).add(normal.clone().multiplyScalar(carX));
       carMesh.position.y = 0.0;
 
-      // Car faces forward
-      const rotMat = new THREE.Matrix4().lookAt(
-        new THREE.Vector3(0, 0, 0),
-        tangent,
-        new THREE.Vector3(0, 1, 0)
-      );
-      carMesh.quaternion.setFromRotationMatrix(rotMat);
+      // Aligns car forward
+      carMesh.lookAt(roadPos.clone().add(tangent));
       carWheels.forEach(w => { w.rotation.x -= speed * 0.16; });
     }
 
-    // Camera chase view
+    // Elevated Chase Camera
     if(camera && carMesh){
       const localCamPos = new THREE.Vector3(0, 5.2, 9.5);
       const targetCamWorld = carMesh.localToWorld(localCamPos);
@@ -1352,7 +1326,7 @@ function gameLoop(now){
       camera.lookAt(targetLookAt);
     }
 
-    // Story Trigger when driving close to each gantry
+    // Trigger Story Modal
     STORY_CHAPTERS.forEach((item, index) => {
       if(!unlockedChapters[index] && Math.abs(u - item.u) < 0.008 && speed > 0){
         unlockedChapters[index] = true;
