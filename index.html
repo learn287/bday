@@ -82,6 +82,7 @@ backdrop-filter:blur(20px);
 border:1.5px solid rgba(212,175,55,.55);
 box-shadow:0 20px 45px rgba(180,130,60,.2), inset 0 0 0 4px rgba(255,255,255,.65);
 z-index:2;
+cursor:pointer;
 }
 
 .card-frame{
@@ -425,7 +426,7 @@ cursor:pointer;
       <span id="dot2" class="dot"></span>
     </div>
 
-    <div id="page1" class="page">
+    <div id="page1" class="page" onclick="switchToWishes()">
       <div class="sub-head">— HAPPY —</div>
       <h1>Birthday<br>Saran</h1>
       <div class="vip-container">
@@ -437,7 +438,7 @@ cursor:pointer;
       <div class="timer-note" id="p1-timer">Wishes opening in 5s... (or tap card)</div>
     </div>
 
-    <div id="page2" class="page" style="display:none;opacity:0;">
+    <div id="page2" class="page" style="display:none;opacity:0;" onclick="startJourney()">
       <div class="wishes-title">✨ Special Wishes For You ✨</div>
       <div class="wishes-container">
         <div class="wish-bubble">🌟 May you get pure and trusted people in your life.</div>
@@ -479,7 +480,6 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
     </div>
   </div>
 
-  <!-- STORY POPUP MODAL -->
   <div id="story-modal">
     <div class="story-card">
       <div class="story-chap-tag" id="story-chap-tag">Chapter 1</div>
@@ -597,10 +597,6 @@ function startJourney(){
   },550);
 }
 
-document.getElementById("page1")?.addEventListener("click", switchToWishes);
-document.getElementById("page2")?.addEventListener("click", startJourney);
-
-/* 2 KM GAME PARAMETERS & CHAPTER DATA */
 const TOTAL_DISTANCE = 2000;
 const ROAD_WIDTH = 14;
 let speed = 0, targetSpeed = 0, traveledDistance = 0, elapsedTime = 0, isFinished = false;
@@ -684,7 +680,6 @@ const STORY_CHAPTERS = [
   }
 ];
 
-/* AUDIO ENGINE */
 let audioCtx = null, engineOsc = null, engineGain = null;
 function initAudio(){
   if(audioCtx){
@@ -717,8 +712,7 @@ function updateAudio(){
     engineGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, .08);
   }catch(e){}
 }
-  /* 3D ENGINE CORE */
-let scene, camera, renderer, roadSpline, carMesh, carWheels = [];
+  let scene, camera, renderer, roadSpline, carMesh, carWheels = [];
 let fireworkTimer = null;
 const activeCrackers = [];
 const crackerColors = [0xff3b30, 0xfbbf24, 0x34d399, 0x38bdf8, 0xa855f7, 0xff2d55];
@@ -743,7 +737,6 @@ function initGameEngine(){
   moon.position.set(60, 120, -80);
   scene.add(moon);
 
-  // 2 KM Winding Highway Spline
   const curvePoints = [
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(38, 0, -250),
@@ -832,12 +825,20 @@ function initGameEngine(){
 
   setupEventListeners();
 
-  // Instant First-Frame Placement: Pre-render scene so it is never black
   const initPt = roadSpline.getPointAt(0.0001);
   const initTan = roadSpline.getTangentAt(0.0001).normalize();
+  const initNorm = new THREE.Vector3(-initTan.z, 0, initTan.x).normalize();
+  const initUp = new THREE.Vector3(0, 1, 0);
+
   carMesh.position.copy(initPt);
   carMesh.position.y = 0.0;
-  carMesh.lookAt(initPt.clone().add(initTan));
+  
+  const initRotMat = new THREE.Matrix4().makeBasis(
+    initNorm,
+    initUp,
+    initTan.clone().negate()
+  );
+  carMesh.quaternion.setFromRotationMatrix(initRotMat);
 
   const initCamWorld = carMesh.localToWorld(new THREE.Vector3(0, 5.2, 9.5));
   camera.position.copy(initCamWorld);
@@ -847,7 +848,6 @@ function initGameEngine(){
   requestAnimationFrame(gameLoop);
 }
 
-/* SIDEWALKS, STREETLIGHTS & PINE TREES */
 function buildForestInfrastructure(){
   const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x64748b });
   const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.7, roughness: 0.3 });
@@ -915,7 +915,6 @@ function buildForestInfrastructure(){
   }
 }
 
-/* 50/50 SPLIT STORY GANTRIES (LEFT: IMAGE CARD / RIGHT: WHITE STORY) */
 function buildStoryGantries(){
   STORY_CHAPTERS.forEach((item) => {
     const gCan = document.createElement('canvas');
@@ -923,7 +922,6 @@ function buildStoryGantries(){
     gCan.height = 420;
     const ctx = gCan.getContext('2d');
 
-    // LEFT 50%: Elegant Photo Frame Card
     const grad = ctx.createLinearGradient(0, 0, 512, 420);
     grad.addColorStop(0, '#1e293b');
     grad.addColorStop(1, '#0f172a');
@@ -943,7 +941,6 @@ function buildStoryGantries(){
     ctx.fillStyle = '#fef08a';
     ctx.fillText("SPECIAL MEMORY", 256, 260);
 
-    // RIGHT 50%: Pure White Background (#ffffff)
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(512, 0, 512, 420);
 
@@ -965,7 +962,6 @@ function buildStoryGantries(){
     ctx.font = 'bold 28px sans-serif';
     ctx.fillText("TO READ STORY ✨", 768, 285);
 
-    // Center divider & outer border
     ctx.strokeStyle = '#cbd5e1';
     ctx.lineWidth = 6;
     ctx.strokeRect(0, 0, 1024, 420);
@@ -999,7 +995,6 @@ function buildStoryGantries(){
   });
 }
 
-/* THE LAST GANTRY: BLACK-GREYISH SHADE & GOLDEN TEXT */
 function buildFinishGantry(){
   const arch = new THREE.Group();
 
@@ -1008,14 +1003,12 @@ function buildFinishGantry(){
   fCan.height = 640;
   const ctx = fCan.getContext('2d');
 
-  // Black-greyish shade gradient
   const bgGrad = ctx.createLinearGradient(0, 0, 0, 640);
   bgGrad.addColorStop(0, '#222630');
   bgGrad.addColorStop(1, '#111317');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, 2048, 640);
 
-  // Golden glowing border
   ctx.strokeStyle = '#ffd700';
   ctx.lineWidth = 22;
   ctx.strokeRect(18, 18, 2012, 604);
@@ -1024,7 +1017,6 @@ function buildFinishGantry(){
   ctx.lineWidth = 6;
   ctx.strokeRect(36, 36, 1976, 568);
 
-  // Golden typography
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
@@ -1064,7 +1056,6 @@ function buildFinishGantry(){
   scene.add(arch);
 }
 
-/* 3D RED SPORTS CAR */
 function buildRedSportsCar(){
   carMesh = new THREE.Group();
 
@@ -1116,8 +1107,7 @@ function buildRedSportsCar(){
   carMesh.add(carBody, carRoof, tlL, tlR, spotL, spotR);
   scene.add(carMesh);
 }
-  /* FIREWORKS / CRACKER PARTICLES */
-function launchCracker(pos){
+  function launchCracker(pos){
   const count = 140;
   const pGeo = new THREE.BufferGeometry();
   const coords = new Float32Array(count * 3);
@@ -1180,7 +1170,6 @@ function updateCrackers(delta){
   }
 }
 
-/* STORY POPUP DISPLAY & RESUME */
 function showStoryModal(chapterData){
   isReadingStory = true;
   document.getElementById('story-chap-tag').textContent = chapterData.chap.toUpperCase();
@@ -1196,7 +1185,6 @@ document.getElementById('story-continue-btn')?.addEventListener('click', () => {
   isReadingStory = false;
 });
 
-/* INPUT LISTENERS */
 function setupEventListeners(){
   function bindButton(btn, setFlag){
     if(!btn) return;
@@ -1260,44 +1248,39 @@ function formatTimer(sec){
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
 }
 
-/* BUTTERY-SMOOTH GAME LOOP */
 let lastTime = performance.now();
-/* BUTTERY-SMOOTH GAME LOOP (PERFECT FORWARD ALIGNMENT) */
-let lastTime = performance.now();
-function gameLoop(now) {
+function gameLoop(now){
   requestAnimationFrame(gameLoop);
   const dt = Math.min((now - lastTime) / 1000, 0.05);
   lastTime = now;
 
-  if (!isFinished && !isReadingStory) {
-    if (Math.abs(speed) > 0.5) elapsedTime += dt;
+  if(!isFinished && !isReadingStory){
+    if(Math.abs(speed) > 0.5) elapsedTime += dt;
 
-    // Smooth forward, reverse, and braking physics
-    if (isGasDown) {
+    if(isGasDown){
       targetSpeed = 115;
       speed += (targetSpeed - speed) * 3.5 * dt;
-    } else if (isRevDown) {
-      targetSpeed = -45; // Smooth reverse
+    } else if(isRevDown){
+      targetSpeed = -45;
       speed += (targetSpeed - speed) * 3.5 * dt;
-    } else if (isBrakeDown) {
+    } else if(isBrakeDown){
       targetSpeed = 0;
       speed += (0 - speed) * 8.0 * dt;
     } else {
       targetSpeed = 0;
-      speed += (0 - speed) * 1.8 * dt; // Rolling friction
+      speed += (0 - speed) * 1.8 * dt;
     }
 
-    if (Math.abs(speed) < 0.2) speed = 0;
+    if(Math.abs(speed) < 0.2) speed = 0;
 
     traveledDistance += (speed / 3.6) * dt;
     traveledDistance = Math.max(0, traveledDistance);
 
-    // Speed-proportional steering
     let steerInput = 0;
-    if (steerLeft) steerInput -= 1;
-    if (steerRight) steerInput += 1;
+    if(steerLeft) steerInput -= 1;
+    if(steerRight) steerInput += 1;
 
-    if (Math.abs(speed) > 0.5) {
+    if(Math.abs(speed) > 0.5){
       const steerFactor = (speed >= 0 ? 1 : -1);
       const steerRate = 8.5 * steerFactor;
       carTargetX += steerInput * steerRate * dt;
@@ -1312,11 +1295,11 @@ function gameLoop(now) {
     const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
     const up = new THREE.Vector3(0, 1, 0);
 
-    if (carMesh) {
+    if(carMesh){
       carMesh.position.copy(roadPos).add(normal.clone().multiplyScalar(carX));
       carMesh.position.y = 0.0;
 
-      // Set true orthonormal basis: local -Z faces forward, local +Z faces backward
+      // Fix: local -Z faces forward down the track
       const rotMat = new THREE.Matrix4().makeBasis(
         normal,
         up,
@@ -1324,12 +1307,10 @@ function gameLoop(now) {
       );
       carMesh.quaternion.setFromRotationMatrix(rotMat);
 
-      // Rotate wheels smoothly with velocity
       carWheels.forEach(w => { w.rotation.x -= speed * 0.08; });
     }
 
-    // Elevated Chase Camera firmly seated behind the car
-    if (camera && carMesh) {
+    if(camera && carMesh){
       const localCamPos = new THREE.Vector3(0, 5.2, 9.5);
       const targetCamWorld = carMesh.localToWorld(localCamPos);
       const targetLookAt = carMesh.localToWorld(new THREE.Vector3(0, 1.0, -22));
@@ -1338,25 +1319,23 @@ function gameLoop(now) {
       camera.lookAt(targetLookAt);
     }
 
-    // Story Trigger
     STORY_CHAPTERS.forEach((item, index) => {
-      if (!unlockedChapters[index] && Math.abs(u - item.u) < 0.008 && speed > 0) {
+      if(!unlockedChapters[index] && Math.abs(u - item.u) < 0.008 && speed > 0){
         unlockedChapters[index] = true;
         showStoryModal(item);
       }
     });
 
-    // 2.00 KM Finish Trigger
-    if (traveledDistance >= TOTAL_DISTANCE) {
+    if(traveledDistance >= TOTAL_DISTANCE){
       traveledDistance = TOTAL_DISTANCE;
       isFinished = true;
       speed = 0;
 
       const finalStats = document.getElementById('final-stats');
-      if (finalStats) finalStats.textContent = `Total Time: ${formatTimer(elapsedTime)}`;
+      if(finalStats) finalStats.textContent = `Total Time: ${formatTimer(elapsedTime)}`;
 
       const finishScreen = document.getElementById('finish-screen');
-      if (finishScreen) finishScreen.style.display = 'grid';
+      if(finishScreen) finishScreen.style.display = 'grid';
 
       triggerConfetti({ particleCount: 160, spread: 100, origin: { y: 0.5 } });
 
@@ -1371,22 +1350,21 @@ function gameLoop(now) {
       }, 320);
     }
 
-    // HUD Updates
     const spdTxt = document.getElementById('speed-txt');
-    if (spdTxt) spdTxt.textContent = Math.round(speed);
+    if(spdTxt) spdTxt.textContent = Math.round(speed);
 
     const distTxt = document.getElementById('dist-txt');
-    if (distTxt) distTxt.textContent = `${(traveledDistance / 1000).toFixed(2)} / 2.00 km`;
+    if(distTxt) distTxt.textContent = `${(traveledDistance / 1000).toFixed(2)} / 2.00 km`;
 
     const timerTxt = document.getElementById('timer-txt');
-    if (timerTxt) timerTxt.textContent = formatTimer(elapsedTime);
+    if(timerTxt) timerTxt.textContent = formatTimer(elapsedTime);
 
     updateAudio();
   }
 
   updateCrackers(dt);
 
-  if (renderer && scene && camera) {
+  if(renderer && scene && camera){
     renderer.render(scene, camera);
   }
 }
