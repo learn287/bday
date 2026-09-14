@@ -1262,38 +1262,42 @@ function formatTimer(sec){
 
 /* BUTTERY-SMOOTH GAME LOOP */
 let lastTime = performance.now();
-function gameLoop(now){
+/* BUTTERY-SMOOTH GAME LOOP (PERFECT FORWARD ALIGNMENT) */
+let lastTime = performance.now();
+function gameLoop(now) {
   requestAnimationFrame(gameLoop);
   const dt = Math.min((now - lastTime) / 1000, 0.05);
   lastTime = now;
 
-  if(!isFinished && !isReadingStory){
-    if(Math.abs(speed) > 0.5) elapsedTime += dt;
+  if (!isFinished && !isReadingStory) {
+    if (Math.abs(speed) > 0.5) elapsedTime += dt;
 
-    if(isGasDown){
+    // Smooth forward, reverse, and braking physics
+    if (isGasDown) {
       targetSpeed = 115;
       speed += (targetSpeed - speed) * 3.5 * dt;
-    } else if(isRevDown){
-      targetSpeed = -45;
+    } else if (isRevDown) {
+      targetSpeed = -45; // Smooth reverse
       speed += (targetSpeed - speed) * 3.5 * dt;
-    } else if(isBrakeDown){
+    } else if (isBrakeDown) {
       targetSpeed = 0;
       speed += (0 - speed) * 8.0 * dt;
     } else {
       targetSpeed = 0;
-      speed += (0 - speed) * 1.8 * dt;
+      speed += (0 - speed) * 1.8 * dt; // Rolling friction
     }
 
-    if(Math.abs(speed) < 0.2) speed = 0;
+    if (Math.abs(speed) < 0.2) speed = 0;
 
     traveledDistance += (speed / 3.6) * dt;
     traveledDistance = Math.max(0, traveledDistance);
 
+    // Speed-proportional steering
     let steerInput = 0;
-    if(steerLeft) steerInput -= 1;
-    if(steerRight) steerInput += 1;
+    if (steerLeft) steerInput -= 1;
+    if (steerRight) steerInput += 1;
 
-    if(Math.abs(speed) > 0.5){
+    if (Math.abs(speed) > 0.5) {
       const steerFactor = (speed >= 0 ? 1 : -1);
       const steerRate = 8.5 * steerFactor;
       carTargetX += steerInput * steerRate * dt;
@@ -1306,18 +1310,26 @@ function gameLoop(now){
     const roadPos = roadSpline.getPointAt(u);
     const tangent = roadSpline.getTangentAt(u).normalize();
     const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+    const up = new THREE.Vector3(0, 1, 0);
 
-    if(carMesh){
+    if (carMesh) {
       carMesh.position.copy(roadPos).add(normal.clone().multiplyScalar(carX));
       carMesh.position.y = 0.0;
 
-      // Aligns car forward
-      carMesh.lookAt(roadPos.clone().add(tangent));
-      carWheels.forEach(w => { w.rotation.x -= speed * 0.16; });
+      // Set true orthonormal basis: local -Z faces forward, local +Z faces backward
+      const rotMat = new THREE.Matrix4().makeBasis(
+        normal,
+        up,
+        tangent.clone().negate()
+      );
+      carMesh.quaternion.setFromRotationMatrix(rotMat);
+
+      // Rotate wheels smoothly with velocity
+      carWheels.forEach(w => { w.rotation.x -= speed * 0.08; });
     }
 
-    // Elevated Chase Camera
-    if(camera && carMesh){
+    // Elevated Chase Camera firmly seated behind the car
+    if (camera && carMesh) {
       const localCamPos = new THREE.Vector3(0, 5.2, 9.5);
       const targetCamWorld = carMesh.localToWorld(localCamPos);
       const targetLookAt = carMesh.localToWorld(new THREE.Vector3(0, 1.0, -22));
@@ -1326,25 +1338,25 @@ function gameLoop(now){
       camera.lookAt(targetLookAt);
     }
 
-    // Trigger Story Modal
+    // Story Trigger
     STORY_CHAPTERS.forEach((item, index) => {
-      if(!unlockedChapters[index] && Math.abs(u - item.u) < 0.008 && speed > 0){
+      if (!unlockedChapters[index] && Math.abs(u - item.u) < 0.008 && speed > 0) {
         unlockedChapters[index] = true;
         showStoryModal(item);
       }
     });
 
-    // Finish Trigger at 2.00 KM
-    if(traveledDistance >= TOTAL_DISTANCE){
+    // 2.00 KM Finish Trigger
+    if (traveledDistance >= TOTAL_DISTANCE) {
       traveledDistance = TOTAL_DISTANCE;
       isFinished = true;
       speed = 0;
 
       const finalStats = document.getElementById('final-stats');
-      if(finalStats) finalStats.textContent = `Total Time: ${formatTimer(elapsedTime)}`;
+      if (finalStats) finalStats.textContent = `Total Time: ${formatTimer(elapsedTime)}`;
 
       const finishScreen = document.getElementById('finish-screen');
-      if(finishScreen) finishScreen.style.display = 'grid';
+      if (finishScreen) finishScreen.style.display = 'grid';
 
       triggerConfetti({ particleCount: 160, spread: 100, origin: { y: 0.5 } });
 
@@ -1359,21 +1371,22 @@ function gameLoop(now){
       }, 320);
     }
 
+    // HUD Updates
     const spdTxt = document.getElementById('speed-txt');
-    if(spdTxt) spdTxt.textContent = Math.round(speed);
+    if (spdTxt) spdTxt.textContent = Math.round(speed);
 
     const distTxt = document.getElementById('dist-txt');
-    if(distTxt) distTxt.textContent = `${(traveledDistance / 1000).toFixed(2)} / 2.00 km`;
+    if (distTxt) distTxt.textContent = `${(traveledDistance / 1000).toFixed(2)} / 2.00 km`;
 
     const timerTxt = document.getElementById('timer-txt');
-    if(timerTxt) timerTxt.textContent = formatTimer(elapsedTime);
+    if (timerTxt) timerTxt.textContent = formatTimer(elapsedTime);
 
     updateAudio();
   }
 
   updateCrackers(dt);
 
-  if(renderer && scene && camera){
+  if (renderer && scene && camera) {
     renderer.render(scene, camera);
   }
 }
