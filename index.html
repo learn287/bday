@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
-<title>Birthday Wish & 1 KM Drive</title>
+<title>Birthday Wish & Story Drive - Saran</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
@@ -53,7 +53,6 @@ transform:scale(1.04);
 pointer-events:none;
 }
 
-/* 3D Glossy Golden Corner Balloons */
 .balloon-deco{
 position:absolute;
 border-radius:50%;
@@ -255,13 +254,13 @@ box-shadow:0 8px 25px rgba(0,0,0,.35);
 .speed-val{ font-size:32px; line-height:1; font-weight:300; font-variant-numeric:tabular-nums; color:#38bdf8; }
 .unit{ font-size:9px; letter-spacing:.13em; opacity:.55; }
 
-/* CONTROLS */
+/* CONTROLS (WITH BACK / REVERSE PEDAL) */
 #controls{
 position:fixed;
 left:0;
 right:0;
 bottom:0;
-padding:0 18px max(18px,env(safe-area-inset-bottom));
+padding:0 14px max(16px,env(safe-area-inset-bottom));
 display:flex;
 justify-content:space-between;
 align-items:flex-end;
@@ -269,14 +268,14 @@ z-index:25;
 pointer-events:none;
 }
 
-.ctrl-group{ display:flex; gap:10px; pointer-events:auto; }
+.ctrl-group{ display:flex; gap:8px; pointer-events:auto; }
 
 .btn-ui{
 touch-action:none;
 display:flex;
 align-items:center;
 justify-content:center;
-border-radius:19px;
+border-radius:18px;
 color:white;
 border:2px solid rgba(255,255,255,.22);
 box-shadow:0 10px 28px rgba(0,0,0,.55), inset 0 1px rgba(255,255,255,.1);
@@ -285,10 +284,88 @@ cursor:pointer;
 }
 
 .btn-ui.active{ transform:scale(.91); filter:brightness(1.35); }
-.steer-btn{ width:66px; height:66px; font-size:22px; background:rgba(24,42,64,.82); border-color:rgba(120,170,240,.38); }
-.pedal-btn{ width:74px; height:112px; font-size:11px; font-weight:800; letter-spacing:.1em; }
-#brake-btn{ background:linear-gradient(180deg,rgba(220,53,69,.52),rgba(145,18,31,.9)); }
-#race-btn{ height:122px; background:linear-gradient(180deg,rgba(45,180,75,.55),rgba(20,110,42,.92)); }
+.steer-btn{ width:62px; height:62px; font-size:20px; background:rgba(24,42,64,.82); border-color:rgba(120,170,240,.38); }
+.pedal-btn{ width:64px; height:105px; font-size:10.5px; font-weight:800; letter-spacing:.08em; }
+#rev-btn{ background:linear-gradient(180deg,rgba(108,117,125,.65),rgba(52,58,64,.95)); border-color:rgba(173,181,189,.4); }
+#brake-btn{ background:linear-gradient(180deg,rgba(220,53,69,.55),rgba(145,18,31,.9)); }
+#race-btn{ height:116px; background:linear-gradient(180deg,rgba(45,180,75,.55),rgba(20,110,42,.92)); }
+
+/* STORY POPUP MODAL (CLEAR READING MODAL) */
+#story-modal{
+position:fixed;
+inset:0;
+display:none;
+place-items:center;
+padding:20px;
+z-index:60;
+background:rgba(4,8,18,.82);
+backdrop-filter:blur(10px);
+-webkit-backdrop-filter:blur(10px);
+animation:fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+.story-card{
+width:100%;
+max-width:420px;
+max-height:85vh;
+overflow-y:auto;
+padding:30px 24px;
+color:#f8fafc;
+border-radius:24px;
+background:linear-gradient(145deg,#0f1c2e,#070d18);
+border:1.5px solid rgba(245,158,11,.45);
+box-shadow:0 24px 60px rgba(0,0,0,.7), 0 0 35px rgba(245,158,11,.2);
+text-align:center;
+}
+
+.story-chap-tag{
+display:inline-block;
+font-size:11px;
+font-weight:800;
+text-transform:uppercase;
+letter-spacing:2px;
+color:#fbbf24;
+background:rgba(245,158,11,.15);
+padding:5px 14px;
+border-radius:20px;
+margin-bottom:14px;
+}
+
+.story-title{
+font-family:'Playfair Display',serif;
+font-size:22px;
+color:#fef08a;
+margin-bottom:16px;
+line-height:1.3;
+}
+
+.story-body{
+font-size:14.5px;
+line-height:1.65;
+color:#e2e8f0;
+white-space:pre-line;
+text-align:left;
+margin-bottom:24px;
+background:rgba(255,255,255,.04);
+padding:16px;
+border-radius:14px;
+border-left:3px solid #f59e0b;
+}
+
+.story-btn{
+padding:12px 28px;
+border:0;
+border-radius:999px;
+color:white;
+background:linear-gradient(135deg,#f59e0b,#d97706);
+font-weight:800;
+font-size:14px;
+box-shadow:0 8px 24px rgba(217,119,6,.45);
+cursor:pointer;
+transition:transform .1s ease;
+}
+.story-btn:active{ transform:scale(0.95); }
 
 /* FINISH SCREEN */
 #finish-screen{
@@ -297,36 +374,36 @@ inset:0;
 display:none;
 place-items:center;
 padding:20px;
-z-index:50;
-background:rgba(0,0,0,.82);
-backdrop-filter:blur(12px);
--webkit-backdrop-filter:blur(12px);
+z-index:70;
+background:rgba(0,0,0,.85);
+backdrop-filter:blur(14px);
+-webkit-backdrop-filter:blur(14px);
 }
 
 .finish-card{
 width:100%;
-max-width:390px;
+max-width:400px;
 padding:35px 25px;
 text-align:center;
 color:white;
 border-radius:25px;
 background:linear-gradient(145deg,#121d2c,#09111c);
-border:1px solid rgba(255,215,0,.35);
-box-shadow:0 30px 80px rgba(0,0,0,.7);
+border:1.5px solid rgba(255,215,0,.45);
+box-shadow:0 30px 80px rgba(0,0,0,.8);
 }
 
-.finish-card h2{ font-family:'Playfair Display',serif; color:#ffd700; font-size:28px; margin-bottom:10px; }
+.finish-card h2{ font-family:'Playfair Display',serif; color:#ffd700; font-size:26px; margin-bottom:12px; line-height:1.2; }
 #final-stats{ font-size:16px; margin:12px 0; color:#38bdf8; font-weight:700; }
-.finish-sub{ opacity:.85; font-size:13px; line-height:1.5; color:#cbd5e1; }
+.finish-sub{ opacity:.9; font-size:13.5px; line-height:1.6; color:#cbd5e1; }
 .restart-btn{
-margin-top:20px;
-padding:13px 27px;
+margin-top:22px;
+padding:13px 30px;
 border:0;
 border-radius:999px;
 color:white;
 background:linear-gradient(135deg,#31b85a,#16853b);
 font-weight:800;
-box-shadow:0 8px 25px rgba(20,150,65,.3);
+box-shadow:0 8px 25px rgba(20,150,65,.35);
 cursor:pointer;
 }
 </style>
@@ -396,8 +473,19 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
       <div class="btn-ui steer-btn" id="steer-right-btn">▶</div>
     </div>
     <div class="ctrl-group">
+      <div class="btn-ui pedal-btn" id="rev-btn">REV</div>
       <div class="btn-ui pedal-btn" id="brake-btn">BRAKE</div>
       <div class="btn-ui pedal-btn" id="race-btn">GAS</div>
+    </div>
+  </div>
+
+  <!-- STORY POPUP MODAL -->
+  <div id="story-modal">
+    <div class="story-card">
+      <div class="story-chap-tag" id="story-chap-tag">Chapter 1</div>
+      <div class="story-title" id="story-title">Title</div>
+      <div class="story-body" id="story-body">Content</div>
+      <button class="story-btn" id="story-continue-btn">Continue Driving 🏎️</button>
     </div>
   </div>
 
@@ -405,14 +493,14 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
     <div class="finish-card">
       <h2>🎉 1 KM FINISHED!</h2>
       <p id="final-stats">Total Time: 00:00.00</p>
-      <p class="finish-sub">Happy Birthday once again, Saran! 🎂<br>You completed the birthday drive.</p>
+      <p class="finish-sub">A very happy birthday to my first boyfriend cum girlfriend, the one and only...<br><strong style="color:#ffd700;font-size:16px;">MR. SARAN. 🎂✨💕</strong></p>
       <button class="restart-btn" id="restart-btn">DRIVE AGAIN 🏎️</button>
     </div>
   </div>
 </div>
 
 <script>
-  try{
+try{
   if(window.Telegram && window.Telegram.WebApp){
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
@@ -512,154 +600,238 @@ function startJourney(){
 document.getElementById("page1")?.addEventListener("click", switchToWishes);
 document.getElementById("page2")?.addEventListener("click", startJourney);
 
-/* GAME STATE VARIABLES */
-const TOTAL_DISTANCE=1000;
-const ROAD_WIDTH=14;
-let speed=0, traveledDistance=0, elapsedTime=0, isFinished=false;
-let isGasDown=false, isBrakeDown=false, steerLeft=false, steerRight=false;
-let carX=0, carTargetX=0, gameInitialized=false;
+/* ALL 13 STORY CHAPTERS */
+const STORY_CHAPTERS = [
+  {
+    u: 0.08,
+    chap: "Chapter 1",
+    title: "The Birthday Wish 🎂✨",
+    text: "A very happy birthday to you! ❤️\n\nMay God bless you with a lot of happiness, prosperity, and trusted people—with no guilt, no expectations, and no unnecessary efforts.\n\nMay you always have endless happiness, laughter that never stops, smiles that light up entire rooms, and oceans of unconditional love in your life.\n\nOn your special day, I’m sending you a truckload of blessings and all the good vibes this universe can hold. 🙏✨💕🌌🎁"
+  },
+  {
+    u: 0.15,
+    chap: "Chapter 2",
+    title: "It Started on a Boring Day…",
+    text: "It has been almost a complete year with you.\n\nAnd honestly, if someone had told me that a completely random and boring day would eventually lead to such a bond, I probably wouldn’t have believed them.\n\nI was waiting for someone that day and had absolutely nothing to do.\n\nThen someone dropped a link to a GC named “Sweet World” in my DM.\n\nSo… I joined."
+  },
+  {
+    u: 0.22,
+    chap: "Chapter 3",
+    title: "“Hy, Hlo”",
+    text: "That was our first interaction.\n\nJust a simple “hy, hlo.”\n\nI genuinely never thought that joining that GC would eventually lead to me having such a great bond with someone.\n\nDays passed…\n\nAnd somehow, the random person I met that day slowly became someone I actually looked forward to talking to."
+  },
+  {
+    u: 0.29,
+    chap: "Chapter 4",
+    title: "Just 20 Days",
+    text: "I still remember you once saying in the group:\n\n“Aate hain aur sabke maje leke chale jaate hain.”\n\nI genuinely smiled over it that day.\n\nAnd idk how…\n\nBut within just 20 days, you became an important part of my life.\n\nIt’s actually funny how quickly some people can become important without you even realising when it happened."
+  },
+  {
+    u: 0.36,
+    chap: "Chapter 5",
+    title: "And Then Came the Kalesh… 😂",
+    text: "From calling you “bhaiya”…\n\nTo having our first major argument on October 7, 2025.\n\nFrom saving my first Telegram contact as:\n“SSSB Super Senior Saran Bhaiya”\n\nTo knowing your favourite song:\n“Koi Apna Hoga.”\n\nAnd then… deleting my account for the first time.\n\nThere have been quite a few chapters in this story. 😂"
+  },
+  {
+    u: 0.44,
+    chap: "Chapter 6",
+    title: "Our Bond Was Never Exactly Peaceful",
+    text: "Majorly, our bond has been about arguments, differences of opinion, and random kalesh.\n\nBut somehow…\n\nWe still shared a bond.\nA special bond.\n\nWaise bhi, kuch log zindagi mein kalesh wale bhi hone chahiye.\n\nExcess sweetness causes diabetes. 😂"
+  },
+  {
+    u: 0.51,
+    chap: "Chapter 7",
+    title: "The Person Behind All the Kalesh",
+    text: "You are honestly a pure soul when it comes to your feelings.\n\nYou can never really pretend to be fake with your close ones.\n\nAnd I genuinely respect that about you.\n\nMaybe that’s one of the reasons why, despite all the arguments and differences, the bond still remained."
+  },
+  {
+    u: 0.58,
+    chap: "Chapter 8",
+    title: "March 18, 2026",
+    text: "Then came March 18, 2026.\n\nI got a text from you after a long time.\n\nAnd honestly… That was genuinely a great relief to me.\n\nI don’t know exactly when it happened, or how it happened…\n\nBut somehow, you became an unattachable person in my life."
+  },
+  {
+    u: 0.65,
+    chap: "Chapter 9",
+    title: "Your Special Talent 😂",
+    text: "And of course…\n\nYour emotional manipulation skills are definitely one of the qualities that make you unique. 😂\n\nYou are the one who once told me:\n“Don’t trust anyone in such a short duration.”\n\nBut khud hi kabhi-kabhi ye use karna bhul jaate ho. 😂\n\nThe irony is honestly impressive."
+  },
+  {
+    u: 0.72,
+    chap: "Chapter 10",
+    title: "One Serious Thing ❤️",
+    text: "Jokes apart…\n\nMay you have a genuinely great life ahead.\n\nAnd TG chhodo, exam ke liye prepare karo. 😂\nPata hai aap kam aate ho, but still, try to minimise that time as much as possible.\n\nAnd… Sorry. For whatever I did. I’m extremely sorry.\nI know some things hurt you, and I also know that simply saying sorry isn’t enough.\n\nBut still… Extremely sorry. ❤️"
+  },
+  {
+    u: 0.79,
+    chap: "Chapter 11",
+    title: "Some Birthday Instructions 😂",
+    text: "Okay, enough emotional drama.\n\nIt’s your birthday yaar.\n\nYou’re about 22–23 years old now…\n\nSo jldi se paise kamao…\naur mere account mein daalo. 😂💸\n\nThis is probably the most important blessing I have for you."
+  },
+  {
+    u: 0.86,
+    chap: "Chapter 12",
+    title: "About Your Gift 🎁",
+    text: "And haan…\n\nKoi gift chahiye toh bata sakte ho.\n\nNakhre karne ki zarurat nahi hai ki:\n“Kuch nahi chahiye”, “Nothing, it’s okay” and all. 😂\n\nMana aapka birthday hai…\nAnd harkaton se ladki ho mere liye…\n\nBut still, gift bata dena. Kya chahiye? 🎁😂"
+  },
+  {
+    u: 0.93,
+    chap: "Chapter 13",
+    title: "The Final Chapter ❤️😂",
+    text: "And after one whole year of:\n\nRandom beginnings… “Hy, hlo”… Arguments… Differences of opinion… Kalesh… Random conversations… Memories… And somehow becoming unattachable…\n\nThere’s only one thing left to say:\n\nA very happy birthday to my first boyfriend cum girlfriend, the one and only…\n\nMR. SARAN. 🎂✨💕"
+  }
+];
 
-/* WEB AUDIO ENGINE */
-let audioCtx=null, engineOsc=null, engineGain=null;
+/* GAME STATE VARIABLES */
+const TOTAL_DISTANCE = 1000;
+const ROAD_WIDTH = 14;
+let speed = 0, targetSpeed = 0, traveledDistance = 0, elapsedTime = 0, isFinished = false;
+let isGasDown = false, isBrakeDown = false, isRevDown = false, steerLeft = false, steerRight = false;
+let carX = 0, carTargetX = 0, gameInitialized = false;
+let isReadingStory = false;
+let unlockedChapters = {};
+
+/* AUDIO ENGINE */
+let audioCtx = null, engineOsc = null, engineGain = null;
 function initAudio(){
   if(audioCtx){
-    if(audioCtx.state==="suspended") audioCtx.resume().catch(()=>{});
+    if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
     return;
   }
   try{
-    const AudioContext=window.AudioContext || window.webkitAudioContext;
-    if(!AudioContext)return;
-    audioCtx=new AudioContext();
-    engineOsc=audioCtx.createOscillator();
-    engineGain=audioCtx.createGain();
-    engineOsc.type="sawtooth";
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if(!AudioContext) return;
+    audioCtx = new AudioContext();
+    engineOsc = audioCtx.createOscillator();
+    engineGain = audioCtx.createGain();
+    engineOsc.type = "sawtooth";
     engineOsc.frequency.setValueAtTime(45, audioCtx.currentTime);
     engineGain.gain.setValueAtTime(.008, audioCtx.currentTime);
     engineOsc.connect(engineGain);
     engineGain.connect(audioCtx.destination);
     engineOsc.start();
-    if(audioCtx.state==="suspended") audioCtx.resume().catch(()=>{});
+    if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
   }catch(e){}
 }
 
 function updateAudio(){
-  if(!audioCtx || !engineOsc || !engineGain)return;
-  const targetFreq=45+speed*1.55;
-  const targetGain=speed>2 ? .008+(speed/175)*.032 : .006;
+  if(!audioCtx || !engineOsc || !engineGain) return;
+  const absSpeed = Math.abs(speed);
+  const targetFreq = 42 + absSpeed * 1.5;
+  const targetGain = absSpeed > 2 ? .008 + (absSpeed / 175) * .032 : .005;
   try{
     engineOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, .08);
     engineGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, .08);
   }catch(e){}
 }
-
-/* 3D ENGINE CORE (WINDING FOREST HIGHWAY) */
-let scene, camera, renderer, roadSpline, carMesh, carWheels=[];
-let fireworkTimer=null;
-const activeCrackers=[];
-const crackerColors=[0xff3b30, 0xfbbf24, 0x34d399, 0x38bdf8, 0xa855f7, 0xff2d55];
+  /* 3D ENGINE CORE */
+let scene, camera, renderer, roadSpline, carMesh, carWheels = [];
+let fireworkTimer = null;
+const activeCrackers = [];
+const crackerColors = [0xff3b30, 0xfbbf24, 0x34d399, 0x38bdf8, 0xa855f7, 0xff2d55];
 
 function initGameEngine(){
-  if(gameInitialized)return;
-  gameInitialized=true;
+  if(gameInitialized) return;
+  gameInitialized = true;
 
-  const container=document.getElementById('webgl-container');
-  scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x0e1b2e);
-  scene.fog=new THREE.Fog(0x0e1b2e, 80, 480);
+  const container = document.getElementById('webgl-container');
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0e1b2e);
+  scene.fog = new THREE.Fog(0x0e1b2e, 90, 500);
 
-  camera=new THREE.PerspectiveCamera(56, window.innerWidth/window.innerHeight, 0.1, 800);
-  renderer=new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+  camera = new THREE.PerspectiveCamera(56, window.innerWidth / window.innerHeight, 0.1, 800);
+  renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   container.appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight(0xdde6ed, 0.9));
-  const moon=new THREE.DirectionalLight(0xffffff, 1.15);
-  moon.position.set(60, 110, -80);
+  scene.add(new THREE.AmbientLight(0xdde6ed, 0.95));
+  const moon = new THREE.DirectionalLight(0xffffff, 1.2);
+  moon.position.set(60, 120, -80);
   scene.add(moon);
 
-  // Snake-like Curve Spline Waypoints
-  const curvePoints=[
+  // Smooth zigzag mountain road points
+  const curvePoints = [
     new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(45, 0, -140),
-    new THREE.Vector3(-45, 0, -290),
-    new THREE.Vector3(48, 0, -450),
-    new THREE.Vector3(-40, 0, -610),
-    new THREE.Vector3(45, 0, -760),
-    new THREE.Vector3(-30, 0, -890),
+    new THREE.Vector3(35, 0, -120),
+    new THREE.Vector3(-38, 0, -260),
+    new THREE.Vector3(40, 0, -420),
+    new THREE.Vector3(-35, 0, -580),
+    new THREE.Vector3(38, 0, -740),
+    new THREE.Vector3(-25, 0, -880),
     new THREE.Vector3(0, 0, -TOTAL_DISTANCE)
   ];
 
-  roadSpline=new THREE.CatmullRomCurve3(curvePoints);
-  roadSpline.curveType='catmullrom';
-  roadSpline.tension=0.5;
+  roadSpline = new THREE.CatmullRomCurve3(curvePoints);
+  roadSpline.curveType = 'catmullrom';
+  roadSpline.tension = 0.5;
 
-  // Road Ribbon Mesh
-  const ROAD_SEGMENTS=600;
-  const roadVerts=[], roadUVs=[], roadIndices=[];
+  // Road geometry
+  const ROAD_SEGMENTS = 700;
+  const roadVerts = [], roadUVs = [], roadIndices = [];
 
-  for(let i=0; i<=ROAD_SEGMENTS; i++){
-    const u=i/ROAD_SEGMENTS;
-    const pt=roadSpline.getPointAt(u);
-    const tan=roadSpline.getTangentAt(u).normalize();
-    const norm=new THREE.Vector3(-tan.z, 0, tan.x).normalize();
+  for(let i = 0; i <= ROAD_SEGMENTS; i++){
+    const u = i / ROAD_SEGMENTS;
+    const pt = roadSpline.getPointAt(u);
+    const tan = roadSpline.getTangentAt(u).normalize();
+    const norm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
 
-    const left=pt.clone().add(norm.clone().multiplyScalar(ROAD_WIDTH/2));
-    const right=pt.clone().add(norm.clone().multiplyScalar(-ROAD_WIDTH/2));
+    const left = pt.clone().add(norm.clone().multiplyScalar(ROAD_WIDTH / 2));
+    const right = pt.clone().add(norm.clone().multiplyScalar(-ROAD_WIDTH / 2));
 
     roadVerts.push(left.x, 0.05, left.z);
     roadVerts.push(right.x, 0.05, right.z);
     roadUVs.push(0, u);
     roadUVs.push(1, u);
 
-    if(i<ROAD_SEGMENTS){
-      const base=i*2;
-      roadIndices.push(base, base+1, base+2);
-      roadIndices.push(base+1, base+3, base+2);
+    if(i < ROAD_SEGMENTS){
+      const base = i * 2;
+      roadIndices.push(base, base + 1, base + 2);
+      roadIndices.push(base + 1, base + 3, base + 2);
     }
   }
 
-  const roadGeo=new THREE.BufferGeometry();
+  const roadGeo = new THREE.BufferGeometry();
   roadGeo.setAttribute('position', new THREE.Float32BufferAttribute(roadVerts, 3));
   roadGeo.setAttribute('uv', new THREE.Float32BufferAttribute(roadUVs, 2));
   roadGeo.setIndex(roadIndices);
   roadGeo.computeVertexNormals();
 
-  // High-visibility Asphalt Texture
-  const rCan=document.createElement('canvas');
-  rCan.width=512;
-  rCan.height=512;
-  const rCtx=rCan.getContext('2d');
-  rCtx.fillStyle='#3a404d';
+  // Crisp grey asphalt texture
+  const rCan = document.createElement('canvas');
+  rCan.width = 512;
+  rCan.height = 512;
+  const rCtx = rCan.getContext('2d');
+  rCtx.fillStyle = '#3a404d';
   rCtx.fillRect(0, 0, 512, 512);
 
-  rCtx.fillStyle='#ffffff';
+  rCtx.fillStyle = '#ffffff';
   rCtx.fillRect(16, 0, 14, 512);
   rCtx.fillRect(482, 0, 14, 512);
 
-  rCtx.fillStyle='#fbbf24';
+  rCtx.fillStyle = '#fbbf24';
   rCtx.fillRect(248, 0, 6, 512);
   rCtx.fillRect(258, 0, 6, 512);
 
-  rCtx.fillStyle='#ffffff';
-  for(let y=0; y<512; y+=64){
-    rCtx.fillRect(130, y+10, 8, 42);
-    rCtx.fillRect(374, y+10, 8, 42);
+  rCtx.fillStyle = '#ffffff';
+  for(let y = 0; y < 512; y += 64){
+    rCtx.fillRect(130, y + 10, 8, 42);
+    rCtx.fillRect(374, y + 10, 8, 42);
   }
 
-  const roadTex=new THREE.CanvasTexture(rCan);
-  roadTex.wrapS=THREE.RepeatWrapping;
-  roadTex.wrapT=THREE.RepeatWrapping;
-  roadTex.repeat.set(1, 40);
+  const roadTex = new THREE.CanvasTexture(rCan);
+  roadTex.wrapS = THREE.RepeatWrapping;
+  roadTex.wrapT = THREE.RepeatWrapping;
+  roadTex.repeat.set(1, 45);
 
-  const roadMesh=new THREE.Mesh(roadGeo, new THREE.MeshLambertMaterial({ map:roadTex, side:THREE.DoubleSide }));
+  const roadMesh = new THREE.Mesh(roadGeo, new THREE.MeshLambertMaterial({ map: roadTex, side: THREE.DoubleSide }));
   scene.add(roadMesh);
 
-  // Roadside Grass Embankment
-  const terrainGeo=new THREE.PlaneGeometry(1600, 1600);
-  const terrainMat=new THREE.MeshLambertMaterial({ color:0x163620 });
-  const terrain=new THREE.Mesh(terrainGeo, terrainMat);
-  terrain.rotation.x=-Math.PI/2;
+  // Forest Grass Terrain
+  const terrainGeo = new THREE.PlaneGeometry(1600, 1600);
+  const terrainMat = new THREE.MeshLambertMaterial({ color: 0x163620 });
+  const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+  terrain.rotation.x = -Math.PI / 2;
   terrain.position.set(0, -0.05, -500);
   scene.add(terrain);
 
@@ -671,238 +843,217 @@ function initGameEngine(){
   setupEventListeners();
   requestAnimationFrame(gameLoop);
 }
-/* SIDEWALKS, GUARDRAILS & PINE FOREST */
+
+/* SIDEWALKS, STREETLIGHTS & TREES */
 function buildForestInfrastructure(){
-  const sidewalkMat=new THREE.MeshLambertMaterial({ color:0x64748b });
-  const railMat=new THREE.MeshStandardMaterial({ color:0x94a3b8, metalness:0.7, roughness:0.3 });
-  const postMat=new THREE.MeshStandardMaterial({ color:0x475569 });
+  const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x64748b });
+  const railMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.7, roughness: 0.3 });
+  const postMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
 
-  for(let i=0; i<=140; i++){
-    const u=i/140;
-    const pt=roadSpline.getPointAt(u);
-    const tan=roadSpline.getTangentAt(u).normalize();
-    const norm=new THREE.Vector3(-tan.z, 0, tan.x).normalize();
+  for(let i = 0; i <= 140; i++){
+    const u = i / 140;
+    const pt = roadSpline.getPointAt(u);
+    const tan = roadSpline.getTangentAt(u).normalize();
+    const norm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
 
-    [-1, 1].forEach(side=>{
-      const curb=new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 7.5), sidewalkMat);
-      curb.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH/2 + 0.9)*side));
-      curb.position.y=0.15;
+    [-1, 1].forEach(side => {
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 7.5), sidewalkMat);
+      curb.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH / 2 + 0.9) * side));
+      curb.position.y = 0.15;
       curb.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
       scene.add(curb);
 
-      const post=new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2, 6), postMat);
-      post.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH/2 + 1.6)*side));
-      post.position.y=0.6;
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.2, 6), postMat);
+      post.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH / 2 + 1.6) * side));
+      post.position.y = 0.6;
       scene.add(post);
 
-      if(i % 6 === 0){
-        const lamp=new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 8, 8), railMat);
-        lamp.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH/2 + 2.5)*side));
-        lamp.position.y=4.0;
+      if(i % 5 === 0){
+        const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 8, 8), railMat);
+        lamp.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH / 2 + 2.5) * side));
+        lamp.position.y = 4.0;
         scene.add(lamp);
 
-        const bulb=new THREE.PointLight(0xfff3d6, 0.85, 35, 2);
+        const bulb = new THREE.PointLight(0xfff3d6, 0.85, 35, 2);
         bulb.position.copy(lamp.position);
-        bulb.position.y=7.8;
-        bulb.position.add(norm.clone().multiplyScalar(-1.4*side));
+        bulb.position.y = 7.8;
+        bulb.position.add(norm.clone().multiplyScalar(-1.4 * side));
         scene.add(bulb);
       }
     });
   }
 
-  const trunkGeo=new THREE.CylinderGeometry(0.3, 0.45, 2.2, 5);
-  const coneGeo=new THREE.ConeGeometry(2.4, 6.5, 5);
-  const folMat=new THREE.MeshLambertMaterial({ color:0x0e3820 });
-  const trkMat=new THREE.MeshLambertMaterial({ color:0x24160d });
+  const trunkGeo = new THREE.CylinderGeometry(0.3, 0.45, 2.2, 5);
+  const coneGeo = new THREE.ConeGeometry(2.4, 6.5, 5);
+  const folMat = new THREE.MeshLambertMaterial({ color: 0x0e3820 });
+  const trkMat = new THREE.MeshLambertMaterial({ color: 0x24160d });
 
-  for(let i=0; i<300; i++){
-    const u=Math.random();
-    const pt=roadSpline.getPointAt(u);
-    const tan=roadSpline.getTangentAt(u).normalize();
-    const norm=new THREE.Vector3(-tan.z, 0, tan.x).normalize();
+  for(let i = 0; i < 300; i++){
+    const u = Math.random();
+    const pt = roadSpline.getPointAt(u);
+    const tan = roadSpline.getTangentAt(u).normalize();
+    const norm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
 
-    const side=Math.random()>0.5 ? 1 : -1;
-    const dist=(ROAD_WIDTH/2)+4.5+Math.random()*40;
-    const pos=pt.clone().add(norm.multiplyScalar(dist*side));
+    const side = Math.random() > 0.5 ? 1 : -1;
+    const dist = (ROAD_WIDTH / 2) + 4.5 + Math.random() * 40;
+    const pos = pt.clone().add(norm.multiplyScalar(dist * side));
 
-    const tree=new THREE.Group();
-    const trunk=new THREE.Mesh(trunkGeo, trkMat);
-    trunk.position.y=1.1;
-    const foliage=new THREE.Mesh(coneGeo, folMat);
-    foliage.position.y=4.8;
+    const tree = new THREE.Group();
+    const trunk = new THREE.Mesh(trunkGeo, trkMat);
+    trunk.position.y = 1.1;
+    const foliage = new THREE.Mesh(coneGeo, folMat);
+    foliage.position.y = 4.8;
     tree.add(trunk, foliage);
 
-    const s=0.75+Math.random()*0.65;
+    const s = 0.75 + Math.random() * 0.65;
     tree.scale.set(s, s, s);
     tree.position.copy(pos);
     scene.add(tree);
   }
 }
 
-/* OVERHEAD HIGHWAY STORY GANTRIES */
+/* 13 OVERHEAD STORY GANTRIES ACROSS THE 1 KM PASS */
 function buildStoryGantries(){
-  const storyMilestones=[
-    { u:0.15, title:"Chapter 1: The Spark", text:"Every bold journey starts with a daring turn into the night..." },
-    { u:0.32, title:"Chapter 2: Mountain Pass", text:"Through winding curves and dark roads, resilience always led the way..." },
-    { u:0.50, title:"Chapter 3: Shared Laughter", text:"Unforgettable memories and laughter shared across every single mile..." },
-    { u:0.68, title:"Chapter 4: Climbing Higher", text:"With each bend, the peak came closer and the vision became clearer..." },
-    { u:0.84, title:"Chapter 5: The Final Stretch", text:"Approaching the grand celebration of an extraordinary milestone..." }
-  ];
+  STORY_CHAPTERS.forEach((item, index) => {
+    const gCan = document.createElement('canvas');
+    gCan.width = 1024;
+    gCan.height = 360;
+    const ctx = gCan.getContext('2d');
 
-  storyMilestones.forEach(item=>{
-    const gCan=document.createElement('canvas');
-    gCan.width=1024;
-    gCan.height=360;
-    const ctx=gCan.getContext('2d');
-
-    ctx.fillStyle='#065f46';
+    ctx.fillStyle = '#065f46';
     ctx.fillRect(0, 0, 1024, 360);
 
-    ctx.fillStyle='#d97706';
-    ctx.fillRect(0, 0, 1024, 58);
-    ctx.fillStyle='#0f172a';
-    ctx.font='bold 30px sans-serif';
-    ctx.textAlign='center';
-    ctx.fillText(item.title.toUpperCase(), 512, 40);
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(0, 0, 1024, 60);
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 32px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${item.chap.toUpperCase()}: ${item.title.toUpperCase()}`, 512, 42);
 
-    ctx.fillStyle='#ffffff';
-    ctx.font='34px sans-serif';
-    const words=item.text.split(' ');
-    let line='', y=130;
-    for(let w=0; w<words.length; w++){
-      const test=line+words[w]+' ';
-      if(ctx.measureText(test).width>880 && w>0){
-        ctx.fillText(line, 512, y);
-        line=words[w]+' ';
-        y+=50;
-      }else{
-        line=test;
-      }
-    }
-    ctx.fillText(line, 512, y);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 38px sans-serif';
+    ctx.fillText("TAP OR DRIVE CLOSE TO READ CHAPTER", 512, 210);
 
-    const tex=new THREE.CanvasTexture(gCan);
-    const signMesh=new THREE.Mesh(
+    const tex = new THREE.CanvasTexture(gCan);
+    const signMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(12, 4.2),
-      new THREE.MeshBasicMaterial({ map:tex, side:THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
     );
-    signMesh.position.y=6.8;
+    signMesh.position.y = 6.8;
 
-    const steelMat=new THREE.MeshStandardMaterial({ color:0x64748b, metalness:0.8 });
-    const pL=new THREE.Mesh(new THREE.BoxGeometry(0.6, 9, 0.6), steelMat);
+    const steelMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.8 });
+    const pL = new THREE.Mesh(new THREE.BoxGeometry(0.6, 9, 0.6), steelMat);
     pL.position.set(-7.5, 4.5, 0);
-    const pR=new THREE.Mesh(new THREE.BoxGeometry(0.6, 9, 0.6), steelMat);
+    const pR = new THREE.Mesh(new THREE.BoxGeometry(0.6, 9, 0.6), steelMat);
     pR.position.set(7.5, 4.5, 0);
-    const beam=new THREE.Mesh(new THREE.BoxGeometry(16, 0.6, 0.8), steelMat);
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(16, 0.6, 0.8), steelMat);
     beam.position.set(0, 9.0, 0);
 
-    const gantry=new THREE.Group();
+    const gantry = new THREE.Group();
     gantry.add(signMesh, pL, pR, beam);
 
-    const pt=roadSpline.getPointAt(item.u);
-    const tan=roadSpline.getTangentAt(item.u).normalize();
+    const pt = roadSpline.getPointAt(item.u);
+    const tan = roadSpline.getTangentAt(item.u).normalize();
     gantry.position.copy(pt);
-    // Face toward driver so text isn't mirrored
     gantry.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan.clone().negate());
     scene.add(gantry);
   });
 }
 
-/* GRAND FINISH ARCH (SARAN) */
+/* FINISH ARCH (HAPPY BIRTHDAY, SARAN) */
 function buildFinishGantry(){
-  const arch=new THREE.Group();
+  const arch = new THREE.Group();
 
-  const fCan=document.createElement('canvas');
-  fCan.width=2048;
-  fCan.height=512;
-  const ctx=fCan.getContext('2d');
+  const fCan = document.createElement('canvas');
+  fCan.width = 2048;
+  fCan.height = 512;
+  const ctx = fCan.getContext('2d');
 
-  ctx.fillStyle='#0f172a';
+  ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, 2048, 512);
 
-  ctx.strokeStyle='#f59e0b';
-  ctx.lineWidth=24;
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 24;
   ctx.strokeRect(16, 16, 2016, 480);
 
-  ctx.font='900 106px sans-serif';
-  ctx.fillStyle='#fef08a';
-  ctx.textAlign='center';
-  ctx.textBaseline='middle';
+  ctx.font = '900 106px sans-serif';
+  ctx.fillStyle = '#fef08a';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
   ctx.fillText('HAPPY BIRTHDAY, SARAN', 1024, 220);
 
-  ctx.font='700 42px sans-serif';
-  ctx.fillStyle='#fbbf24';
+  ctx.font = '700 42px sans-serif';
+  ctx.fillStyle = '#fbbf24';
   ctx.fillText('★ A JOURNEY WELL TRAVELED ★', 1024, 340);
 
-  const tex=new THREE.CanvasTexture(fCan);
-  const board=new THREE.Mesh(
+  const tex = new THREE.CanvasTexture(fCan);
+  const board = new THREE.Mesh(
     new THREE.PlaneGeometry(16, 4.4),
-    new THREE.MeshBasicMaterial({ map:tex, side:THREE.DoubleSide })
+    new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
   );
-  board.position.y=7.2;
+  board.position.y = 7.2;
 
-  const steelMat=new THREE.MeshStandardMaterial({ color:0x475569, metalness:0.8 });
-  const pL=new THREE.Mesh(new THREE.BoxGeometry(0.8, 10, 0.8), steelMat);
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8 });
+  const pL = new THREE.Mesh(new THREE.BoxGeometry(0.8, 10, 0.8), steelMat);
   pL.position.set(-8.5, 5, 0);
-  const pR=new THREE.Mesh(new THREE.BoxGeometry(0.8, 10, 0.8), steelMat);
+  const pR = new THREE.Mesh(new THREE.BoxGeometry(0.8, 10, 0.8), steelMat);
   pR.position.set(8.5, 5, 0);
-  const beam=new THREE.Mesh(new THREE.BoxGeometry(18, 0.8, 1), steelMat);
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(18, 0.8, 1), steelMat);
   beam.position.set(0, 9.6, 0);
 
   arch.add(board, pL, pR, beam);
 
-  const endPt=roadSpline.getPointAt(1.0);
-  const endTan=roadSpline.getTangentAt(1.0).normalize();
+  const endPt = roadSpline.getPointAt(1.0);
+  const endTan = roadSpline.getTangentAt(1.0).normalize();
   arch.position.copy(endPt);
-  // Face toward approaching driver
   arch.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), endTan.clone().negate());
   scene.add(arch);
 }
 
 /* 3D RED SPORTS COUPE */
 function buildRedSportsCar(){
-  carMesh=new THREE.Group();
+  carMesh = new THREE.Group();
 
-  const redMat=new THREE.MeshLambertMaterial({ color:0xdc2626 });
-  const carBody=new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.7, 4.2), redMat);
-  carBody.position.y=0.65;
+  const redMat = new THREE.MeshLambertMaterial({ color: 0xdc2626 });
+  const carBody = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.7, 4.2), redMat);
+  carBody.position.y = 0.65;
 
-  const glassMat=new THREE.MeshLambertMaterial({ color:0x0b1320 });
-  const carRoof=new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.55, 2.1), glassMat);
+  const glassMat = new THREE.MeshLambertMaterial({ color: 0x0b1320 });
+  const carRoof = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.55, 2.1), glassMat);
   carRoof.position.set(0, 1.15, -0.2);
 
-  const tlMat=new THREE.MeshBasicMaterial({ color:0xff2222 });
-  const tlL=new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.12, 0.1), tlMat);
+  const tlMat = new THREE.MeshBasicMaterial({ color: 0xff2222 });
+  const tlL = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.12, 0.1), tlMat);
   tlL.position.set(-0.72, 0.68, 2.11);
-  const tlR=tlL.clone();
-  tlR.position.x=0.72;
+  const tlR = tlL.clone();
+  tlR.position.x = 0.72;
 
-  const spotL=new THREE.SpotLight(0xfff7ed, 4.5, 60, Math.PI/5, 0.3);
+  const spotL = new THREE.SpotLight(0xfff7ed, 4.5, 60, Math.PI / 5, 0.3);
   spotL.position.set(-0.7, 0.7, -2.1);
-  const tL=new THREE.Object3D();
+  const tL = new THREE.Object3D();
   tL.position.set(-0.7, 0.2, -25);
   carMesh.add(tL);
-  spotL.target=tL;
+  spotL.target = tL;
 
-  const spotR=new THREE.SpotLight(0xfff7ed, 4.5, 60, Math.PI/5, 0.3);
+  const spotR = new THREE.SpotLight(0xfff7ed, 4.5, 60, Math.PI / 5, 0.3);
   spotR.position.set(0.7, 0.7, -2.1);
-  const tR=new THREE.Object3D();
+  const tR = new THREE.Object3D();
   tR.position.set(0.7, 0.2, -25);
   carMesh.add(tR);
-  spotR.target=tR;
+  spotR.target = tR;
 
-  const wGeo=new THREE.CylinderGeometry(0.38, 0.38, 0.3, 16);
-  wGeo.rotateZ(Math.PI/2);
-  const wMat=new THREE.MeshLambertMaterial({ color:0x111827 });
-  carWheels=[];
+  const wGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.3, 16);
+  wGeo.rotateZ(Math.PI / 2);
+  const wMat = new THREE.MeshLambertMaterial({ color: 0x111827 });
+  carWheels = [];
 
   [
-    { x:-1.1, y:0.38, z:-1.2 },
-    { x:1.1, y:0.38, z:-1.2 },
-    { x:-1.1, y:0.38, z:1.2 },
-    { x:1.1, y:0.38, z:1.2 }
-  ].forEach(pos=>{
-    const w=new THREE.Mesh(wGeo, wMat);
+    { x: -1.1, y: 0.38, z: -1.2 },
+    { x: 1.1, y: 0.38, z: -1.2 },
+    { x: -1.1, y: 0.38, z: 1.2 },
+    { x: 1.1, y: 0.38, z: 1.2 }
+  ].forEach(pos => {
+    const w = new THREE.Mesh(wGeo, wMat);
     w.position.set(pos.x, pos.y, pos.z);
     carMesh.add(w);
     carWheels.push(w);
@@ -911,62 +1062,62 @@ function buildRedSportsCar(){
   carMesh.add(carBody, carRoof, tlL, tlR, spotL, spotR);
   scene.add(carMesh);
 }
-  /* FIREWORKS & CRACKER PARTICLES */
+  /* FIREWORKS / CRACKER PARTICLES */
 function launchCracker(pos){
-  const count=130;
-  const pGeo=new THREE.BufferGeometry();
-  const coords=new Float32Array(count*3);
-  const vels=[];
-  const col=crackerColors[Math.floor(Math.random()*crackerColors.length)];
+  const count = 130;
+  const pGeo = new THREE.BufferGeometry();
+  const coords = new Float32Array(count * 3);
+  const vels = [];
+  const col = crackerColors[Math.floor(Math.random() * crackerColors.length)];
 
-  for(let i=0; i<count; i++){
-    coords[i*3]=pos.x;
-    coords[i*3+1]=pos.y;
-    coords[i*3+2]=pos.z;
+  for(let i = 0; i < count; i++){
+    coords[i * 3] = pos.x;
+    coords[i * 3 + 1] = pos.y;
+    coords[i * 3 + 2] = pos.z;
 
-    const theta=Math.random()*Math.PI*2;
-    const phi=Math.acos((Math.random()*2)-1);
-    const spd=12+Math.random()*18;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos((Math.random() * 2) - 1);
+    const spd = 12 + Math.random() * 18;
 
     vels.push(new THREE.Vector3(
-      spd*Math.sin(phi)*Math.cos(theta),
-      spd*Math.sin(phi)*Math.sin(theta),
-      spd*Math.cos(phi)
+      spd * Math.sin(phi) * Math.cos(theta),
+      spd * Math.sin(phi) * Math.sin(theta),
+      spd * Math.cos(phi)
     ));
   }
 
   pGeo.setAttribute('position', new THREE.BufferAttribute(coords, 3));
-  const pMat=new THREE.PointsMaterial({
-    color:col,
-    size:0.85,
-    transparent:true,
-    opacity:1.0,
-    blending:THREE.AdditiveBlending,
-    depthWrite:false
+  const pMat = new THREE.PointsMaterial({
+    color: col,
+    size: 0.85,
+    transparent: true,
+    opacity: 1.0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
   });
 
-  const sys=new THREE.Points(pGeo, pMat);
+  const sys = new THREE.Points(pGeo, pMat);
   scene.add(sys);
-  activeCrackers.push({ sys, vels, life:1.0, decay:0.016 });
+  activeCrackers.push({ sys, vels, life: 1.0, decay: 0.016 });
 }
 
 function updateCrackers(delta){
-  for(let i=activeCrackers.length-1; i>=0; i--){
-    const c=activeCrackers[i];
-    c.life-=c.decay;
+  for(let i = activeCrackers.length - 1; i >= 0; i--){
+    const c = activeCrackers[i];
+    c.life -= c.decay;
 
-    const pos=c.sys.geometry.attributes.position.array;
-    for(let j=0; j<c.vels.length; j++){
-      c.vels[j].y-=9.8*delta;
-      pos[j*3]+=c.vels[j].x*delta;
-      pos[j*3+1]+=c.vels[j].y*delta;
-      pos[j*3+2]+=c.vels[j].z*delta;
+    const pos = c.sys.geometry.attributes.position.array;
+    for(let j = 0; j < c.vels.length; j++){
+      c.vels[j].y -= 9.8 * delta;
+      pos[j * 3] += c.vels[j].x * delta;
+      pos[j * 3 + 1] += c.vels[j].y * delta;
+      pos[j * 3 + 2] += c.vels[j].z * delta;
     }
 
-    c.sys.geometry.attributes.position.needsUpdate=true;
-    c.sys.material.opacity=Math.max(0, c.life);
+    c.sys.geometry.attributes.position.needsUpdate = true;
+    c.sys.material.opacity = Math.max(0, c.life);
 
-    if(c.life<=0){
+    if(c.life <= 0){
       scene.remove(c.sys);
       c.sys.geometry.dispose();
       c.sys.material.dispose();
@@ -975,17 +1126,33 @@ function updateCrackers(delta){
   }
 }
 
+/* STORY POPUP DISPLAY & RESUME */
+function showStoryModal(chapterData){
+  isReadingStory = true;
+  document.getElementById('story-chap-tag').textContent = chapterData.chap.toUpperCase();
+  document.getElementById('story-title').textContent = chapterData.title;
+  document.getElementById('story-body').textContent = chapterData.text;
+  document.getElementById('story-modal').style.display = 'grid';
+  targetSpeed = 0;
+  speed = 0;
+}
+
+document.getElementById('story-continue-btn')?.addEventListener('click', () => {
+  document.getElementById('story-modal').style.display = 'none';
+  isReadingStory = false;
+});
+
 /* EVENT LISTENERS & INPUTS */
 function setupEventListeners(){
   function bindButton(btn, setFlag){
-    if(!btn)return;
-    const start=e=>{
+    if(!btn) return;
+    const start = e => {
       e.preventDefault();
       initAudio();
       setFlag(true);
       btn.classList.add('active');
     };
-    const end=e=>{
+    const end = e => {
       e.preventDefault();
       setFlag(false);
       btn.classList.remove('active');
@@ -994,34 +1161,37 @@ function setupEventListeners(){
     btn.addEventListener('mousedown', start);
     btn.addEventListener('mouseup', end);
     btn.addEventListener('mouseleave', end);
-    btn.addEventListener('touchstart', start, { passive:false });
-    btn.addEventListener('touchend', end, { passive:false });
-    btn.addEventListener('touchcancel', end, { passive:false });
+    btn.addEventListener('touchstart', start, { passive: false });
+    btn.addEventListener('touchend', end, { passive: false });
+    btn.addEventListener('touchcancel', end, { passive: false });
   }
 
-  bindButton(document.getElementById('race-btn'), val=>isGasDown=val);
-  bindButton(document.getElementById('brake-btn'), val=>isBrakeDown=val);
-  bindButton(document.getElementById('steer-left-btn'), val=>steerLeft=val);
-  bindButton(document.getElementById('steer-right-btn'), val=>steerRight=val);
+  bindButton(document.getElementById('race-btn'), val => isGasDown = val);
+  bindButton(document.getElementById('brake-btn'), val => isBrakeDown = val);
+  bindButton(document.getElementById('rev-btn'), val => isRevDown = val);
+  bindButton(document.getElementById('steer-left-btn'), val => steerLeft = val);
+  bindButton(document.getElementById('steer-right-btn'), val => steerRight = val);
 
-  window.addEventListener('keydown', e=>{
+  window.addEventListener('keydown', e => {
     initAudio();
-    if(e.code==='KeyW' || e.code==='ArrowUp' || e.code==='Space') isGasDown=true;
-    if(e.code==='KeyS' || e.code==='ArrowDown') isBrakeDown=true;
-    if(e.code==='KeyA' || e.code==='ArrowLeft') steerLeft=true;
-    if(e.code==='KeyD' || e.code==='ArrowRight') steerRight=true;
+    if(e.code === 'KeyW' || e.code === 'ArrowUp') isGasDown = true;
+    if(e.code === 'Space') isBrakeDown = true;
+    if(e.code === 'KeyS' || e.code === 'ArrowDown') isRevDown = true;
+    if(e.code === 'KeyA' || e.code === 'ArrowLeft') steerLeft = true;
+    if(e.code === 'KeyD' || e.code === 'ArrowRight') steerRight = true;
   });
 
-  window.addEventListener('keyup', e=>{
-    if(e.code==='KeyW' || e.code==='ArrowUp' || e.code==='Space') isGasDown=false;
-    if(e.code==='KeyS' || e.code==='ArrowDown') isBrakeDown=false;
-    if(e.code==='KeyA' || e.code==='ArrowLeft') steerLeft=false;
-    if(e.code==='KeyD' || e.code==='ArrowRight') steerRight=false;
+  window.addEventListener('keyup', e => {
+    if(e.code === 'KeyW' || e.code === 'ArrowUp') isGasDown = false;
+    if(e.code === 'Space') isBrakeDown = false;
+    if(e.code === 'KeyS' || e.code === 'ArrowDown') isRevDown = false;
+    if(e.code === 'KeyA' || e.code === 'ArrowLeft') steerLeft = false;
+    if(e.code === 'KeyD' || e.code === 'ArrowRight') steerRight = false;
   });
 
-  window.addEventListener('resize', ()=>{
-    if(!camera || !renderer)return;
-    camera.aspect=window.innerWidth/window.innerHeight;
+  window.addEventListener('resize', () => {
+    if(!camera || !renderer) return;
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
@@ -1030,42 +1200,60 @@ function setupEventListeners(){
 }
 
 function formatTimer(sec){
-  const m=Math.floor(sec/60);
-  const s=Math.floor(sec%60);
-  const ms=Math.floor((sec%1)*100);
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  const ms = Math.floor((sec % 1) * 100);
   return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(ms).padStart(2,'0')}`;
 }
 
-/* MAIN GAME ANIMATION LOOP (FORWARD ALIGNED) */
-let lastTime=performance.now();
+/* BUTTERY-SMOOTH GAME LOOP */
+let lastTime = performance.now();
 function gameLoop(now){
   requestAnimationFrame(gameLoop);
-  const dt=Math.min((now-lastTime)/1000, 0.1);
-  lastTime=now;
+  const dt = Math.min((now - lastTime) / 1000, 0.05);
+  lastTime = now;
 
-  if(!isFinished){
-    if(speed>0.5) elapsedTime+=dt;
+  if(!isFinished && !isReadingStory){
+    if(Math.abs(speed) > 0.5) elapsedTime += dt;
 
-    if(isGasDown) speed+=(48-(speed*0.16))*dt;
-    else if(isBrakeDown) speed-=80*dt;
-    else speed-=12*dt;
-
-    speed=Math.max(0, Math.min(speed, 175));
-    traveledDistance+=(speed/3.6)*dt;
-
-    let steerInput=0;
-    if(steerLeft) steerInput-=1;
-    if(steerRight) steerInput+=1;
-
-    if(speed>1){
-      const steerRate=(speed/90)*8.5;
-      carTargetX += steerInput * steerRate * dt;
-      carTargetX = Math.max(-ROAD_WIDTH/2 + 1.8, Math.min(ROAD_WIDTH/2 - 1.8, carTargetX));
+    // Smooth forward, reverse, and braking physics
+    if(isGasDown){
+      targetSpeed = 110;
+      speed += (targetSpeed - speed) * 3.5 * dt;
+    } else if(isRevDown){
+      targetSpeed = -45; // Smooth reverse motion
+      speed += (targetSpeed - speed) * 3.5 * dt;
+    } else if(isBrakeDown){
+      targetSpeed = 0;
+      speed += (0 - speed) * 8.0 * dt;
+    } else {
+      // Natural rolling friction
+      targetSpeed = 0;
+      speed += (0 - speed) * 1.8 * dt;
     }
 
-    carX += (carTargetX - carX) * 0.12;
+    if(Math.abs(speed) < 0.2) speed = 0;
 
-    const u = THREE.MathUtils.clamp(traveledDistance/TOTAL_DISTANCE, 0.0001, 0.9999);
+    traveledDistance += (speed / 3.6) * dt;
+    traveledDistance = Math.max(0, traveledDistance);
+
+    // Dynamic steering proportional to speed
+    let steerInput = 0;
+    if(steerLeft) steerInput -= 1;
+    if(steerRight) steerInput += 1;
+
+    if(Math.abs(speed) > 0.5){
+      const steerFactor = (speed >= 0 ? 1 : -1);
+      const steerRate = 8.5 * steerFactor;
+      carTargetX += steerInput * steerRate * dt;
+      carTargetX = Math.max(-ROAD_WIDTH / 2 + 1.8, Math.min(ROAD_WIDTH / 2 - 1.8, carTargetX));
+    }
+
+    // Dampened lateral lerp for butter-smooth road holding
+    carX += (carTargetX - carX) * (1 - Math.exp(-14 * dt));
+
+    // Spline progression
+    const u = THREE.MathUtils.clamp(traveledDistance / TOTAL_DISTANCE, 0.0001, 0.9999);
     const roadPos = roadSpline.getPointAt(u);
     const tangent = roadSpline.getTangentAt(u).normalize();
     const normal = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
@@ -1074,26 +1262,35 @@ function gameLoop(now){
       carMesh.position.copy(roadPos).add(normal.clone().multiplyScalar(carX));
       carMesh.position.y = 0.0;
 
-      // FIXED: Look directly along tangent so car faces FORWARD down the track
+      // Forward alignment along curve
       const rotMat = new THREE.Matrix4().lookAt(
         new THREE.Vector3(0, 0, 0),
         tangent,
         new THREE.Vector3(0, 1, 0)
       );
       carMesh.quaternion.setFromRotationMatrix(rotMat);
-      // FIXED: Forward wheel rotation
+
+      // Rotate wheels smoothly with forward/reverse velocity
       carWheels.forEach(w => { w.rotation.x -= speed * 0.16; });
     }
 
-    // Elevated Highway Chase Cam Behind Vehicle
+    // Elevated Chase Camera with Smooth Damping
     if(camera && carMesh){
       const localCamPos = new THREE.Vector3(0, 5.2, 9.5);
       const targetCamWorld = carMesh.localToWorld(localCamPos);
       const targetLookAt = carMesh.localToWorld(new THREE.Vector3(0, 1.0, -22));
 
-      camera.position.lerp(targetCamWorld, 0.18);
+      camera.position.lerp(targetCamWorld, 1 - Math.exp(-12 * dt));
       camera.lookAt(targetLookAt);
     }
+
+    // Story Trigger Detection along the Highway
+    STORY_CHAPTERS.forEach((item, index) => {
+      if(!unlockedChapters[index] && Math.abs(u - item.u) < 0.012 && speed > 0){
+        unlockedChapters[index] = true;
+        showStoryModal(item);
+      }
+    });
 
     // Finish Trigger
     if(traveledDistance >= TOTAL_DISTANCE){
@@ -1107,14 +1304,14 @@ function gameLoop(now){
       const finishScreen = document.getElementById('finish-screen');
       if(finishScreen) finishScreen.style.display = 'grid';
 
-      triggerConfetti({ particleCount:160, spread:100, origin:{y:0.5} });
+      triggerConfetti({ particleCount: 160, spread: 100, origin: { y: 0.5 } });
 
       const endPt = roadSpline.getPointAt(1.0);
       fireworkTimer = setInterval(() => {
         const offset = new THREE.Vector3(
-          (Math.random()-0.5)*30,
-          14+Math.random()*12,
-          (Math.random()-0.5)*20
+          (Math.random() - 0.5) * 30,
+          14 + Math.random() * 12,
+          (Math.random() - 0.5) * 20
         );
         launchCracker(endPt.clone().add(offset));
       }, 320);
@@ -1124,7 +1321,7 @@ function gameLoop(now){
     if(spdTxt) spdTxt.textContent = Math.round(speed);
 
     const distTxt = document.getElementById('dist-txt');
-    if(distTxt) distTxt.textContent = `${(traveledDistance/1000).toFixed(2)} / 1.00 km`;
+    if(distTxt) distTxt.textContent = `${(traveledDistance / 1000).toFixed(2)} / 1.00 km`;
 
     const timerTxt = document.getElementById('timer-txt');
     if(timerTxt) timerTxt.textContent = formatTimer(elapsedTime);
@@ -1142,17 +1339,22 @@ function gameLoop(now){
 function restartDrive(){
   traveledDistance = 0;
   speed = 0;
+  targetSpeed = 0;
   elapsedTime = 0;
   carX = 0;
   carTargetX = 0;
   isFinished = false;
+  isReadingStory = false;
+  unlockedChapters = {};
   if(fireworkTimer){
     clearInterval(fireworkTimer);
     fireworkTimer = null;
   }
   const finishScreen = document.getElementById('finish-screen');
   if(finishScreen) finishScreen.style.display = 'none';
-  triggerConfetti({ particleCount:80, spread:70, origin:{y:0.6} });
+  const storyModal = document.getElementById('story-modal');
+  if(storyModal) storyModal.style.display = 'none';
+  triggerConfetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
 }
 </script>
 </body>
