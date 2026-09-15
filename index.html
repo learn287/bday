@@ -482,7 +482,25 @@ zindagi ne jo diya, usi mein khubsurati dhund lena..</div>
 
   <div id="story-modal">
     <div class="story-card">
-      <div class="story-chap-tag" id="story-chap-tag">Chapter 1</div>try{
+      <div class="story-chap-tag" id="story-chap-tag">Chapter 1</div>
+      <div class="story-title" id="story-title">Title</div>
+      <div class="story-body" id="story-body">Content</div>
+      <button class="story-btn" id="story-continue-btn">Continue Driving 🏎️</button>
+    </div>
+  </div>
+
+  <div id="finish-screen">
+    <div class="finish-card">
+      <h2>🎉 2 KM COMPLETED!</h2>
+      <p id="final-stats">Total Time: 00:00.00</p>
+      <p class="finish-sub">Happy birthday to my first boyfriend cum girlfriend, the one and only…<br><strong style="color:#ffd700;font-size:17px;">MR. SARAN 🎂✨💕</strong></p>
+      <button class="restart-btn" id="restart-btn">DRIVE AGAIN 🏎️</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  try{
   if(window.Telegram && window.Telegram.WebApp){
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
@@ -696,7 +714,7 @@ function updateAudio(){
     engineGain.gain.setTargetAtTime(targetGain, audioCtx.currentTime, .06);
   }catch(e){}
 }
-      let scene, camera, renderer, roadSpline, carMesh, carWheels = [];
+  let scene, camera, renderer, roadSpline, carMesh, carWheels = [];
 let camLookTarget = null;
 let fireworkTimer = null;
 const activeCrackers = [];
@@ -711,22 +729,19 @@ function initGameEngine(){
   scene = new THREE.Scene();
 
   scene.background = new THREE.Color(0x040711);
-  scene.fog = new THREE.Fog(0x040711, 80, 420); // Optimized depth cull distance
+  scene.fog = new THREE.Fog(0x040711, 80, 420);
 
   camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 750);
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  // Capped at 1.5 for silky 60 FPS on high-DPI mobile screens
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   container.appendChild(renderer.domElement);
 
-  // Balanced Night Sky Ambiance
   scene.add(new THREE.AmbientLight(0x2a364a, 0.75));
   const moonLight = new THREE.DirectionalLight(0xd4e2fa, 0.85);
   moonLight.position.set(50, 100, -60);
   scene.add(moonLight);
 
-  // Lightweight 350 Star Canopy
   const starGeo = new THREE.BufferGeometry();
   const starCount = 350;
   const starPos = new Float32Array(starCount * 3);
@@ -739,7 +754,6 @@ function initGameEngine(){
   const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.6, transparent: true, opacity: 0.8 });
   scene.add(new THREE.Points(starGeo, starMat));
 
-  // Glowing 3D Moon
   const moonMesh = new THREE.Mesh(
     new THREE.SphereGeometry(16, 16, 16),
     new THREE.MeshBasicMaterial({ color: 0xfef9e7 })
@@ -747,7 +761,6 @@ function initGameEngine(){
   moonMesh.position.set(120, 150, -750);
   scene.add(moonMesh);
 
-  // 2 KM Curvature Highway Spline
   const curvePoints = [
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(30, 0, -260),
@@ -763,7 +776,7 @@ function initGameEngine(){
   roadSpline.curveType = 'catmullrom';
   roadSpline.tension = 0.5;
 
-  const ROAD_SEGMENTS = 700; // Optimized segments for higher FPS
+  const ROAD_SEGMENTS = 700;
   const roadVerts = [], roadUVs = [], roadIndices = [];
 
   for(let i = 0; i <= ROAD_SEGMENTS; i++){
@@ -793,7 +806,6 @@ function initGameEngine(){
   roadGeo.setIndex(roadIndices);
   roadGeo.computeVertexNormals();
 
-  // Fast Procedural Road Canvas
   const rCan = document.createElement('canvas');
   rCan.width = 512;
   rCan.height = 512;
@@ -805,11 +817,9 @@ function initGameEngine(){
   rCtx.fillRect(16, 0, 8, 512);
   rCtx.fillRect(488, 0, 8, 512);
 
-  // Double Solid Center Lines
   rCtx.fillRect(251, 0, 4, 512);
   rCtx.fillRect(257, 0, 4, 512);
 
-  // Dashed lines
   for(let y = 0; y < 512; y += 64){
     rCtx.fillRect(135, y + 10, 6, 42);
     rCtx.fillRect(372, y + 10, 6, 42);
@@ -823,7 +833,6 @@ function initGameEngine(){
   const roadMesh = new THREE.Mesh(roadGeo, new THREE.MeshLambertMaterial({ map: roadTex, side: THREE.DoubleSide }));
   scene.add(roadMesh);
 
-  // Ground plane
   const terrainGeo = new THREE.PlaneGeometry(1800, 2400);
   const terrain = new THREE.Mesh(terrainGeo, new THREE.MeshLambertMaterial({ color: 0x060910 }));
   terrain.rotation.x = -Math.PI / 2;
@@ -837,6 +846,7 @@ function initGameEngine(){
 
   setupEventListeners();
 
+  // Corrected variable usage prevents any reference errors on startup
   const initPt = roadSpline.getPointAt(0.0001);
   const initTan = roadSpline.getTangentAt(0.0001).normalize();
   const initNorm = new THREE.Vector3(-initTan.z, 0, initTan.x).normalize();
@@ -857,19 +867,15 @@ function initGameEngine(){
   requestAnimationFrame(gameLoop);
 }
 
-/* 60 FPS OPTIMIZED CITY (REDUCED DRAW CALLS & 0 HEAVY LIGHTS) */
 function buildFastNightCityInfrastructure(){
   const sidewalkMat = new THREE.MeshLambertMaterial({ color: 0x3d434d });
   const railingMat = new THREE.MeshLambertMaterial({ color: 0x111317 });
   const lampPoleMat = new THREE.MeshLambertMaterial({ color: 0x475569 });
-  // Glowing yellow bulb mesh that requires 0 dynamic light calculations
   const glowBulbMat = new THREE.MeshBasicMaterial({ color: 0xffe28a });
 
-  // Grey Concrete Buildings
   const greyBldgPalette = [0x252a34, 0x2e3440, 0x383e4a, 0x414958];
   const bldgMatCache = greyBldgPalette.map(col => new THREE.MeshLambertMaterial({ color: col }));
 
-  // High-Reflective Mirror Glass Panels
   const mirrorGlassMat = new THREE.MeshStandardMaterial({
     color: 0x7fa5cf,
     metalness: 0.95,
@@ -878,7 +884,6 @@ function buildFastNightCityInfrastructure(){
 
   const warmWindowMat = new THREE.MeshBasicMaterial({ color: 0xffe28a });
 
-  // Sidewalks & Streetlamps every 14 meters (Reduced by 60% for smooth 60 FPS)
   for(let i = 0; i <= 120; i++){
     const u = i / 120;
     const pt = roadSpline.getPointAt(u);
@@ -898,7 +903,6 @@ function buildFastNightCityInfrastructure(){
       rail.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
       scene.add(rail);
 
-      // Glowing Streetlight (0 GPU Light Cost)
       if(i % 3 === 0){
         const lamp = new THREE.Group();
         const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 8.5, 6), lampPoleMat);
@@ -917,7 +921,6 @@ function buildFastNightCityInfrastructure(){
     });
   }
 
-  // Grey High-Rise Buildings with Reflective Mirror Facades
   for(let zIdx = 6; zIdx < 120; zIdx += 3){
     const u = zIdx / 120;
     const pt = roadSpline.getPointAt(u);
@@ -935,13 +938,11 @@ function buildFastNightCityInfrastructure(){
       building.position.y = bHeight / 2;
       building.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
 
-      // Large Reflective Mirror Curtain Wall
       const mirrorFacade = new THREE.Mesh(new THREE.PlaneGeometry(bWidth * 0.88, bHeight * 0.75), mirrorGlassMat);
       mirrorFacade.position.set(0, 0.5, (bDepth / 2 + 0.06) * -side);
       mirrorFacade.rotation.y = side > 0 ? Math.PI : 0;
       building.add(mirrorFacade);
 
-      // Individual Lit Night-Office Window Strips
       const floorCount = Math.floor(bHeight / 4);
       for(let fl = 0; fl < floorCount; fl++){
         if(Math.random() > 0.45){
@@ -985,14 +986,12 @@ function buildRealisticSportsCar(){
   const spoiler = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.06, 0.35), paintMat);
   spoiler.position.set(0, 0.86, 2.05);
 
-  // Glowing Headlights
   [-0.68, 0.68].forEach(x => {
     const headlight = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.12, 0.15), lightMat);
     headlight.position.set(x, 0.62, -2.14);
     carMesh.add(headlight);
   });
 
-  // Dual Headlight Road Beams
   const spotL = new THREE.SpotLight(0xfff7ed, 3.5, 65, Math.PI / 5, 0.35);
   spotL.position.set(-0.68, 0.65, -2.15);
   const targetL = new THREE.Object3D();
@@ -1040,8 +1039,7 @@ function buildRealisticSportsCar(){
   carMesh.add(mainBody, hood, cabin, roof, diffuser, spoiler);
   scene.add(carMesh);
 }
-        /* ILLUMINATED SIGNBOARDS WITH ZERO GPU OVERHEAD */
-function buildStoryGantries(){
+  function buildStoryGantries(){
   const userPhoto = new Image();
   userPhoto.crossOrigin = "anonymous";
   userPhoto.src = PHOTO_FILE;
@@ -1114,7 +1112,6 @@ function buildStoryGantries(){
     renderBoard(false);
     loadedBoardTextures.push({ render: renderBoard, tex });
 
-    // MeshBasicMaterial keeps the sign clear and illuminated at night
     const signMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(13.5, 5.4),
       new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
@@ -1132,7 +1129,6 @@ function buildStoryGantries(){
     const gantry = new THREE.Group();
     gantry.add(signMesh, pL, pR, beam);
 
-    // Glowing Overhead Floodlight Fixtures
     [-3.8, 3.8].forEach(lx => {
       const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.85, 6), lampFixtureMat);
       arm.rotation.x = Math.PI / 4;
@@ -1161,7 +1157,6 @@ function buildStoryGantries(){
   };
 }
 
-/* ILLUMINATED FINISH GANTRY WITH GOLDEN LIGHTS */
 function buildFinishGantry(){
   const arch = new THREE.Group();
 
@@ -1216,7 +1211,6 @@ function buildFinishGantry(){
 
   arch.add(board, pL, pR, beam);
 
-  // Triple Golden Spotlight Fixtures
   const goldLampMat = new THREE.MeshBasicMaterial({ color: 0xffe066 });
   [-5.5, 0, 5.5].forEach(lx => {
     const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.9, 6), steelMat);
@@ -1242,7 +1236,7 @@ function buildFinishGantry(){
 }
 
 function launchCracker(pos){
-  const count = 90; // Optimized particle count
+  const count = 90;
   const pGeo = new THREE.BufferGeometry();
   const coords = new Float32Array(count * 3);
   const vels = [];
@@ -1384,7 +1378,6 @@ function formatTimer(sec){
 let lastTime = performance.now();
 function gameLoop(now){
   requestAnimationFrame(gameLoop);
-  // Clamped dt avoids stutter on frame drops
   const dt = Math.min((now - lastTime) / 1000, 0.033);
   lastTime = now;
 
@@ -1530,21 +1523,3 @@ function restartDrive(){
 </script>
 </body>
 </html>
-      <div class="story-title" id="story-title">Title</div>
-      <div class="story-body" id="story-body">Content</div>
-      <button class="story-btn" id="story-continue-btn">Continue Driving 🏎️</button>
-    </div>
-  </div>
-
-  <div id="finish-screen">
-    <div class="finish-card">
-      <h2>🎉 2 KM COMPLETED!</h2>
-      <p id="final-stats">Total Time: 00:00.00</p>
-      <p class="finish-sub">Happy birthday to my first boyfriend cum girlfriend, the one and only…<br><strong style="color:#ffd700;font-size:17px;">MR. SARAN 🎂✨💕</strong></p>
-      <button class="restart-btn" id="restart-btn">DRIVE AGAIN 🏎️</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  
