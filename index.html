@@ -916,12 +916,24 @@ function buildForestInfrastructure(){
 }
 
 /* ==========================================================
-   50/50 SPLIT STORY GANTRIES (FIXED IMAGE LOADER)
+   50/50 SPLIT STORY GANTRIES (SELF-CONTAINED & CRASH-PROOF)
    ========================================================== */
 function buildStoryGantries() {
+  const loadedBoards = [];
   const userPhoto = new Image();
-  // Removed crossOrigin to prevent local canvas security blocks
-  userPhoto.src = PHOTO_FILE;
+  let photoReady = false;
+
+  // Uses PHOTO_FILE if set, otherwise defaults to photo.jpg
+  const photoPath = (typeof PHOTO_FILE !== 'undefined' && PHOTO_FILE) ? PHOTO_FILE : 'photo.jpg';
+  userPhoto.src = photoPath;
+
+  userPhoto.onload = () => {
+    photoReady = true;
+    loadedBoards.forEach(b => b.update(true));
+  };
+  userPhoto.onerror = () => {
+    // Graceful fallback to memory card if image is missing
+  };
 
   STORY_CHAPTERS.forEach((item) => {
     const gCan = document.createElement('canvas');
@@ -930,11 +942,21 @@ function buildStoryGantries() {
     const ctx = gCan.getContext('2d');
     const tex = new THREE.CanvasTexture(gCan);
 
-    function renderBoard(hasImage = false) {
-      // LEFT 50%
-      if (hasImage) {
-        ctx.drawImage(userPhoto, 0, 0, 512, 420);
+    function renderBoard(hasImg) {
+      ctx.clearRect(0, 0, 1024, 420);
+
+      // --- LEFT 50% (Image or Fallback) ---
+      if (hasImg && userPhoto.complete && userPhoto.naturalWidth > 0) {
+        try {
+          ctx.drawImage(userPhoto, 0, 0, 512, 420);
+        } catch (e) {
+          drawLeftPlaceholder();
+        }
       } else {
+        drawLeftPlaceholder();
+      }
+
+      function drawLeftPlaceholder() {
         const grad = ctx.createLinearGradient(0, 0, 512, 420);
         grad.addColorStop(0, '#1e293b');
         grad.addColorStop(1, '#0f172a');
@@ -950,12 +972,12 @@ function buildStoryGantries() {
         ctx.textAlign = 'center';
         ctx.fillText("📸", 256, 185);
 
-        ctx.font = 'bold 30px sans-serif';
+        ctx.font = 'bold 28px sans-serif';
         ctx.fillStyle = '#fef08a';
-        ctx.fillText("SPECIAL MEMORY", 256, 260);
+        ctx.fillText("SPECIAL MEMORY", 256, 255);
       }
 
-      // RIGHT 50%: Pure White
+      // --- RIGHT 50%: Pure White Background with Story Text ---
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(512, 0, 512, 420);
 
@@ -977,18 +999,20 @@ function buildStoryGantries() {
       ctx.font = 'bold 28px sans-serif';
       ctx.fillText("TO READ STORY ✨", 768, 285);
 
+      // Dividing line and border
       ctx.strokeStyle = '#cbd5e1';
       ctx.lineWidth = 6;
       ctx.strokeRect(0, 0, 1024, 420);
       ctx.beginPath();
-      ctx.moveTo(512, 0); ctx.lineTo(512, 420);
+      ctx.moveTo(512, 0); 
+      ctx.lineTo(512, 420);
       ctx.stroke();
 
       tex.needsUpdate = true;
     }
 
-    renderBoard(false);
-    loadedBoardTextures.push({ render: renderBoard, tex });
+    renderBoard(photoReady);
+    loadedBoards.push({ update: renderBoard });
 
     const signMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(13, 5.2),
@@ -1013,10 +1037,6 @@ function buildStoryGantries() {
     gantry.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan.clone().negate());
     scene.add(gantry);
   });
-
-  userPhoto.onload = () => {
-    loadedBoardTextures.forEach(b => b.render(true));
-  };
 }
 function buildFinishGantry(){
   const arch = new THREE.Group();
