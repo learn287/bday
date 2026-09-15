@@ -205,14 +205,14 @@ color:#996e26;
 font-weight:700;
 }
 
-/* 3D GAME STAGE (MIDNIGHT CITY THEME) */
+/* 3D GAME STAGE - MIDNIGHT SKY */
 #game-stage{
 display:none;
 position:fixed;
 inset:0;
 width:100%;
 height:100%;
-background:#060b14;
+background:#040711;
 }
 
 #webgl-container{
@@ -241,11 +241,11 @@ min-width:125px;
 padding:9px 12px;
 border-radius:14px;
 color:#eef5ff;
-background:rgba(4,10,18,.75);
+background:rgba(4,10,18,.82);
 border:1px solid rgba(255,255,255,.15);
 backdrop-filter:blur(12px);
 -webkit-backdrop-filter:blur(12px);
-box-shadow:0 8px 25px rgba(0,0,0,.35);
+box-shadow:0 8px 25px rgba(0,0,0,.45);
 }
 
 .speed-panel{ min-width:110px; text-align:right; }
@@ -279,7 +279,7 @@ justify-content:center;
 border-radius:18px;
 color:white;
 border:2px solid rgba(255,255,255,.22);
-box-shadow:0 10px 28px rgba(0,0,0,.55), inset 0 1px rgba(255,255,255,.1);
+box-shadow:0 10px 28px rgba(0,0,0,.65), inset 0 1px rgba(255,255,255,.1);
 transition:transform .08s ease, filter .08s ease;
 cursor:pointer;
 }
@@ -299,7 +299,7 @@ display:none;
 place-items:center;
 padding:20px;
 z-index:60;
-background:rgba(4,8,18,.84);
+background:rgba(2,5,12,.88);
 backdrop-filter:blur(10px);
 -webkit-backdrop-filter:blur(10px);
 animation:fadeIn 0.3s ease;
@@ -314,9 +314,9 @@ overflow-y:auto;
 padding:30px 24px;
 color:#f8fafc;
 border-radius:24px;
-background:linear-gradient(145deg,#0f1c2e,#070d18);
+background:linear-gradient(145deg,#0e1726,#050912);
 border:1.5px solid rgba(245,158,11,.45);
-box-shadow:0 24px 60px rgba(0,0,0,.7), 0 0 35px rgba(245,158,11,.2);
+box-shadow:0 24px 60px rgba(0,0,0,.8), 0 0 35px rgba(245,158,11,.2);
 text-align:center;
 }
 
@@ -376,7 +376,7 @@ display:none;
 place-items:center;
 padding:20px;
 z-index:70;
-background:rgba(0,0,0,.85);
+background:rgba(0,0,0,.88);
 backdrop-filter:blur(14px);
 -webkit-backdrop-filter:blur(14px);
 }
@@ -390,7 +390,7 @@ color:white;
 border-radius:25px;
 background:linear-gradient(145deg,#121d2c,#09111c);
 border:1.5px solid rgba(255,215,0,.45);
-box-shadow:0 30px 80px rgba(0,0,0,.8);
+box-shadow:0 30px 80px rgba(0,0,0,.85);
 }
 
 .finish-card h2{ font-family:'Playfair Display',serif; color:#ffd700; font-size:24px; margin-bottom:12px; line-height:1.3; }
@@ -597,7 +597,6 @@ function startJourney(){
   },550);
 }
 
-// Ensure photo.jpg is stored in the exact same GitHub folder as index.html
 const PHOTO_FILE = "photo.jpg";
 
 const STORY_CHAPTERS = [
@@ -729,9 +728,9 @@ function initGameEngine(){
   const container = document.getElementById('webgl-container');
   scene = new THREE.Scene();
 
-  // Midnight Night View Sky & Distant Fog
-  scene.background = new THREE.Color(0x060b14);
-  scene.fog = new THREE.Fog(0x060b14, 110, 650);
+  // DEEP MIDNIGHT SKY & DISTANT FOG
+  scene.background = new THREE.Color(0x040711);
+  scene.fog = new THREE.Fog(0x040711, 100, 600);
 
   camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 950);
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -741,13 +740,35 @@ function initGameEngine(){
   renderer.toneMappingExposure = 1.15;
   container.appendChild(renderer.domElement);
 
-  // Cool Moonlit Ambiance
-  scene.add(new THREE.HemisphereLight(0x283852, 0x070b12, 0.65));
-  const moonLight = new THREE.DirectionalLight(0xcfdcf5, 1.1);
+  // Cool Moonlit Ambient Illumination
+  scene.add(new THREE.HemisphereLight(0x223247, 0x05080f, 0.6));
+  const moonLight = new THREE.DirectionalLight(0xcfdcf5, 1.0);
   moonLight.position.set(60, 130, -70);
   scene.add(moonLight);
 
-  // 2 KM Curvature Spline
+  // 1. STARRY NIGHT DOME (800 Stars in Sky)
+  const starGeo = new THREE.BufferGeometry();
+  const starCount = 800;
+  const starPos = new Float32Array(starCount * 3);
+  for(let s = 0; s < starCount; s++){
+    starPos[s*3] = (Math.random() - 0.5) * 800;
+    starPos[s*3+1] = 60 + Math.random() * 250;
+    starPos[s*3+2] = -Math.random() * 2200;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.4, transparent: true, opacity: 0.85 });
+  const starField = new THREE.Points(starGeo, starMat);
+  scene.add(starField);
+
+  // 2. GLOWING CRESCENT 3D MOON
+  const moonMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(18, 24, 24),
+    new THREE.MeshBasicMaterial({ color: 0xfef9e7 })
+  );
+  moonMesh.position.set(160, 190, -850);
+  scene.add(moonMesh);
+
+  // 2 KM Curvature Highway Spline
   const curvePoints = [
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(30, 0, -260),
@@ -793,7 +814,6 @@ function initGameEngine(){
   roadGeo.setIndex(roadIndices);
   roadGeo.computeVertexNormals();
 
-  // Night Asphalt Texture with Double White Center Lines
   const rCan = document.createElement('canvas');
   rCan.width = 1024;
   rCan.height = 1024;
@@ -837,7 +857,7 @@ function initGameEngine(){
   scene.add(roadMesh);
 
   const terrainGeo = new THREE.PlaneGeometry(2400, 2800);
-  const terrainMat = new THREE.MeshStandardMaterial({ color: 0x090f18, roughness: 0.95 });
+  const terrainMat = new THREE.MeshStandardMaterial({ color: 0x070b12, roughness: 0.95 });
   const terrain = new THREE.Mesh(terrainGeo, terrainMat);
   terrain.rotation.x = -Math.PI / 2;
   terrain.position.set(0, -0.05, -1000);
@@ -871,17 +891,15 @@ function initGameEngine(){
 }
 
 function buildNightCityInfrastructure(){
-  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x4f5460, roughness: 0.7 });
+  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x474c56, roughness: 0.7 });
   const railingMat = new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.35, metalness: 0.85 });
   const lampPoleMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.4 });
   const phoneMat = new THREE.MeshStandardMaterial({ color: 0xc91818, roughness: 0.3, metalness: 0.2 });
   const phoneGlassMat = new THREE.MeshStandardMaterial({ color: 0xa5e1ff, roughness: 0.1, transparent: true, opacity: 0.7 });
 
-  // Greyish Building Concrete Palette
   const greyBldgPalette = [0x252a34, 0x2e3440, 0x383e4a, 0x414958, 0x4c5566, 0x323842];
   const bldgMatCache = greyBldgPalette.map(col => new THREE.MeshStandardMaterial({ color: col, roughness: 0.7, metalness: 0.3 }));
 
-  // Reflective Mirror-Glass Panels
   const mirrorGlassMat = new THREE.MeshStandardMaterial({
     color: 0x7fa5cf,
     metalness: 0.95,
@@ -958,7 +976,6 @@ function buildNightCityInfrastructure(){
     });
   }
 
-  // Greyish Buildings with Reflective Mirror Facades
   for(let zIdx = 10; zIdx < 280; zIdx += 4){
     const u = zIdx / 280;
     const pt = roadSpline.getPointAt(u);
@@ -1109,10 +1126,14 @@ function buildRealisticSportsCar(){
   carMesh.add(mainBody, hood, cabin, roof, grille, diffuser, spoiler);
   scene.add(carMesh);
 }
-  function buildStoryGantries(){
+  /* ILLUMINATED 50/50 STORY GANTRIES WITH OVERHEAD FLOODLIGHT FIXTURES */
+function buildStoryGantries(){
   const userPhoto = new Image();
   userPhoto.crossOrigin = "anonymous";
   userPhoto.src = PHOTO_FILE;
+
+  const lampFixtureMat = new THREE.MeshStandardMaterial({ color: 0x1b1e24, metalness: 0.85, roughness: 0.3 });
+  const lampLensMat = new THREE.MeshBasicMaterial({ color: 0xfff6cf });
 
   STORY_CHAPTERS.forEach((item) => {
     const gCan = document.createElement('canvas');
@@ -1196,6 +1217,28 @@ function buildRealisticSportsCar(){
     const gantry = new THREE.Group();
     gantry.add(signMesh, pL, pR, beam);
 
+    // DUAL ILLUMINATED FLOODLIGHT FIXTURES ON TOP OF SIGNBOARD
+    [-3.8, 3.8].forEach(lx => {
+      const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.85, 8), lampFixtureMat);
+      arm.rotation.x = Math.PI / 4;
+      arm.position.set(lx, 10.15, 0.45);
+
+      const hood = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.26, 0.4), lampFixtureMat);
+      hood.position.set(lx, 9.85, 0.75);
+      hood.rotation.x = Math.PI / 5;
+
+      const lens = new THREE.Mesh(new THREE.PlaneGeometry(0.58, 0.22), lampLensMat);
+      lens.position.set(lx, 9.77, 0.78);
+      lens.rotation.x = Math.PI / 3;
+
+      gantry.add(arm, hood, lens);
+    });
+
+    // Warm Halogen Floodlight Illuminating the Board Face
+    const boardSpot = new THREE.PointLight(0xfff4db, 1.4, 18, 2);
+    boardSpot.position.set(0, 9.6, 1.1);
+    gantry.add(boardSpot);
+
     const pt = roadSpline.getPointAt(item.u);
     const tan = roadSpline.getTangentAt(item.u).normalize();
     gantry.position.copy(pt);
@@ -1208,6 +1251,7 @@ function buildRealisticSportsCar(){
   };
 }
 
+/* ILLUMINATED FINISH GANTRY WITH TRIPLE GOLDEN LIGHTS */
 function buildFinishGantry(){
   const arch = new THREE.Group();
 
@@ -1261,6 +1305,29 @@ function buildFinishGantry(){
   beam.position.set(0, 10.1, 0);
 
   arch.add(board, pL, pR, beam);
+
+  // TRIPLE GOLDEN OVERHEAD SPOTLIGHT FIXTURES
+  const goldLampMat = new THREE.MeshBasicMaterial({ color: 0xffe066 });
+  [-5.5, 0, 5.5].forEach(lx => {
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.9, 6), steelMat);
+    arm.rotation.x = Math.PI / 4;
+    arm.position.set(lx, 10.5, 0.55);
+
+    const hood = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.3, 0.45), steelMat);
+    hood.position.set(lx, 10.18, 0.88);
+    hood.rotation.x = Math.PI / 5;
+
+    const bulb = new THREE.Mesh(new THREE.PlaneGeometry(0.65, 0.24), goldLampMat);
+    bulb.position.set(lx, 10.1, 0.91);
+    bulb.rotation.x = Math.PI / 3;
+
+    arch.add(arm, hood, bulb);
+  });
+
+  // Radiant Golden Light on Finish Gantry
+  const finishLight = new THREE.PointLight(0xffd700, 2.2, 24, 2);
+  finishLight.position.set(0, 9.9, 1.4);
+  arch.add(finishLight);
 
   const endPt = roadSpline.getPointAt(1.0);
   const endTan = roadSpline.getTangentAt(1.0).normalize();
