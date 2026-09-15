@@ -915,61 +915,81 @@ function buildForestInfrastructure(){
   }
 }
 
-function buildStoryGantries(){
+/* ==========================================================
+   50/50 SPLIT STORY GANTRIES (FIXED IMAGE LOADER)
+   ========================================================== */
+function buildStoryGantries() {
+  const userPhoto = new Image();
+  // Removed crossOrigin to prevent local canvas security blocks
+  userPhoto.src = PHOTO_FILE;
+
   STORY_CHAPTERS.forEach((item) => {
     const gCan = document.createElement('canvas');
     gCan.width = 1024;
     gCan.height = 420;
     const ctx = gCan.getContext('2d');
-
-    const grad = ctx.createLinearGradient(0, 0, 512, 420);
-    grad.addColorStop(0, '#1e293b');
-    grad.addColorStop(1, '#0f172a');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 512, 420);
-
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 10;
-    ctx.strokeRect(20, 20, 472, 380);
-
-    ctx.fillStyle = '#ffd700';
-    ctx.font = '72px serif';
-    ctx.textAlign = 'center';
-    ctx.fillText("📸", 256, 185);
-
-    ctx.font = 'bold 30px sans-serif';
-    ctx.fillStyle = '#fef08a';
-    ctx.fillText("SPECIAL MEMORY", 256, 260);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(512, 0, 512, 420);
-
-    ctx.fillStyle = '#d97706';
-    ctx.fillRect(512, 0, 512, 54);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 26px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(item.chap.toUpperCase(), 768, 36);
-
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 34px sans-serif';
-    ctx.fillText(item.title, 768, 140);
-
-    ctx.fillStyle = '#64748b';
-    ctx.font = '600 24px sans-serif';
-    ctx.fillText("DRIVE CLOSE OR TAP", 768, 240);
-    ctx.fillStyle = '#f59e0b';
-    ctx.font = 'bold 28px sans-serif';
-    ctx.fillText("TO READ STORY ✨", 768, 285);
-
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = 6;
-    ctx.strokeRect(0, 0, 1024, 420);
-    ctx.beginPath();
-    ctx.moveTo(512, 0); ctx.lineTo(512, 420);
-    ctx.stroke();
-
     const tex = new THREE.CanvasTexture(gCan);
+
+    function renderBoard(hasImage = false) {
+      // LEFT 50%
+      if (hasImage) {
+        ctx.drawImage(userPhoto, 0, 0, 512, 420);
+      } else {
+        const grad = ctx.createLinearGradient(0, 0, 512, 420);
+        grad.addColorStop(0, '#1e293b');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 512, 420);
+
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(20, 20, 472, 380);
+
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '72px serif';
+        ctx.textAlign = 'center';
+        ctx.fillText("📸", 256, 185);
+
+        ctx.font = 'bold 30px sans-serif';
+        ctx.fillStyle = '#fef08a';
+        ctx.fillText("SPECIAL MEMORY", 256, 260);
+      }
+
+      // RIGHT 50%: Pure White
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(512, 0, 512, 420);
+
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(512, 0, 512, 54);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(item.chap.toUpperCase(), 768, 36);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText(item.title, 768, 140);
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '600 24px sans-serif';
+      ctx.fillText("DRIVE CLOSE OR TAP", 768, 240);
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.fillText("TO READ STORY ✨", 768, 285);
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 6;
+      ctx.strokeRect(0, 0, 1024, 420);
+      ctx.beginPath();
+      ctx.moveTo(512, 0); ctx.lineTo(512, 420);
+      ctx.stroke();
+
+      tex.needsUpdate = true;
+    }
+
+    renderBoard(false);
+    loadedBoardTextures.push({ render: renderBoard, tex });
+
     const signMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(13, 5.2),
       new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide })
@@ -993,8 +1013,11 @@ function buildStoryGantries(){
     gantry.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan.clone().negate());
     scene.add(gantry);
   });
-}
 
+  userPhoto.onload = () => {
+    loadedBoardTextures.forEach(b => b.render(true));
+  };
+}
 function buildFinishGantry(){
   const arch = new THREE.Group();
 
@@ -1090,6 +1113,8 @@ function buildRedSportsCar(){
   const wGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.3, 16);
   wGeo.rotateZ(Math.PI / 2);
   const wMat = new THREE.MeshLambertMaterial({ color: 0x111827 });
+
+
   carWheels = [];
 
   [
