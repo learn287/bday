@@ -205,14 +205,14 @@ color:#996e26;
 font-weight:700;
 }
 
-/* 3D GAME STAGE */
+/* 3D GAME STAGE (MIDNIGHT CITY THEME) */
 #game-stage{
 display:none;
 position:fixed;
 inset:0;
 width:100%;
 height:100%;
-background:#76b6e8;
+background:#060b14;
 }
 
 #webgl-container{
@@ -597,7 +597,7 @@ function startJourney(){
   },550);
 }
 
-// Ensure photo.jpg is in the same folder as index.html
+// Ensure photo.jpg is stored in the exact same GitHub folder as index.html
 const PHOTO_FILE = "photo.jpg";
 
 const STORY_CHAPTERS = [
@@ -728,22 +728,26 @@ function initGameEngine(){
 
   const container = document.getElementById('webgl-container');
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x76b6e8);
-  scene.fog = new THREE.Fog(0x90c7f2, 140, 750);
+
+  // Midnight Night View Sky & Distant Fog
+  scene.background = new THREE.Color(0x060b14);
+  scene.fog = new THREE.Fog(0x060b14, 110, 650);
 
   camera = new THREE.PerspectiveCamera(54, window.innerWidth / window.innerHeight, 0.1, 950);
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.15;
   container.appendChild(renderer.domElement);
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x7c94a6, 0.8));
-  const sunLight = new THREE.DirectionalLight(0xfffaed, 1.4);
-  sunLight.position.set(70, 150, -80);
-  scene.add(sunLight);
+  // Cool Moonlit Ambiance
+  scene.add(new THREE.HemisphereLight(0x283852, 0x070b12, 0.65));
+  const moonLight = new THREE.DirectionalLight(0xcfdcf5, 1.1);
+  moonLight.position.set(60, 130, -70);
+  scene.add(moonLight);
 
+  // 2 KM Curvature Spline
   const curvePoints = [
     new THREE.Vector3(0, 0, 0),
     new THREE.Vector3(30, 0, -260),
@@ -789,18 +793,19 @@ function initGameEngine(){
   roadGeo.setIndex(roadIndices);
   roadGeo.computeVertexNormals();
 
+  // Night Asphalt Texture with Double White Center Lines
   const rCan = document.createElement('canvas');
   rCan.width = 1024;
   rCan.height = 1024;
   const rCtx = rCan.getContext('2d');
 
-  rCtx.fillStyle = '#42454b';
+  rCtx.fillStyle = '#22252a';
   rCtx.fillRect(0, 0, 1024, 1024);
 
   for(let n = 0; n < 30000; n++){
     const nx = Math.random() * 1024;
     const ny = Math.random() * 1024;
-    const shade = Math.random() > 0.5 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
+    const shade = Math.random() > 0.5 ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.08)';
     rCtx.fillStyle = shade;
     rCtx.fillRect(nx, ny, 2, 2);
   }
@@ -809,7 +814,7 @@ function initGameEngine(){
   rCtx.fillRect(32, 0, 16, 1024);
   rCtx.fillRect(976, 0, 16, 1024);
 
-  rCtx.fillStyle = '#f8fafc';
+  rCtx.fillStyle = '#ffffff';
   rCtx.fillRect(503, 0, 8, 1024);
   rCtx.fillRect(513, 0, 8, 1024);
 
@@ -826,19 +831,19 @@ function initGameEngine(){
   const roadMesh = new THREE.Mesh(roadGeo, new THREE.MeshStandardMaterial({
     map: roadTex,
     roughness: 0.85,
-    metalness: 0.1,
+    metalness: 0.15,
     side: THREE.DoubleSide
   }));
   scene.add(roadMesh);
 
   const terrainGeo = new THREE.PlaneGeometry(2400, 2800);
-  const terrainMat = new THREE.MeshStandardMaterial({ color: 0x5a6358, roughness: 0.95 });
+  const terrainMat = new THREE.MeshStandardMaterial({ color: 0x090f18, roughness: 0.95 });
   const terrain = new THREE.Mesh(terrainGeo, terrainMat);
   terrain.rotation.x = -Math.PI / 2;
   terrain.position.set(0, -0.05, -1000);
   scene.add(terrain);
 
-  buildCityInfrastructure();
+  buildNightCityInfrastructure();
   buildStoryGantries();
   buildFinishGantry();
   buildRealisticSportsCar();
@@ -865,28 +870,26 @@ function initGameEngine(){
   requestAnimationFrame(gameLoop);
 }
 
-function buildCityInfrastructure(){
-  const swCan = document.createElement('canvas');
-  swCan.width = 256;
-  swCan.height = 256;
-  const swCtx = swCan.getContext('2d');
-  swCtx.fillStyle = '#b8bec7';
-  swCtx.fillRect(0, 0, 256, 256);
-  swCtx.strokeStyle = '#9ca3af';
-  swCtx.lineWidth = 4;
-  swCtx.strokeRect(0, 0, 256, 128);
-  swCtx.strokeRect(0, 128, 256, 128);
-  const sidewalkTex = new THREE.CanvasTexture(swCan);
-  sidewalkTex.wrapS = THREE.RepeatWrapping;
-  sidewalkTex.wrapT = THREE.RepeatWrapping;
-  sidewalkTex.repeat.set(1, 2);
+function buildNightCityInfrastructure(){
+  const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x4f5460, roughness: 0.7 });
+  const railingMat = new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.35, metalness: 0.85 });
+  const lampPoleMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.4 });
+  const phoneMat = new THREE.MeshStandardMaterial({ color: 0xc91818, roughness: 0.3, metalness: 0.2 });
+  const phoneGlassMat = new THREE.MeshStandardMaterial({ color: 0xa5e1ff, roughness: 0.1, transparent: true, opacity: 0.7 });
 
-  const sidewalkMat = new THREE.MeshStandardMaterial({ map: sidewalkTex, roughness: 0.75 });
-  const railingMat = new THREE.MeshStandardMaterial({ color: 0x181a1d, roughness: 0.35, metalness: 0.85 });
-  const lampPoleMat = new THREE.MeshStandardMaterial({ color: 0x4a5568, metalness: 0.8, roughness: 0.4 });
-  const hedgeMat = new THREE.MeshStandardMaterial({ color: 0x24512e, roughness: 0.9 });
-  const phoneMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.3, metalness: 0.2 });
-  const glassMat = new THREE.MeshStandardMaterial({ color: 0x94d4f7, roughness: 0.1, transparent: true, opacity: 0.55 });
+  // Greyish Building Concrete Palette
+  const greyBldgPalette = [0x252a34, 0x2e3440, 0x383e4a, 0x414958, 0x4c5566, 0x323842];
+  const bldgMatCache = greyBldgPalette.map(col => new THREE.MeshStandardMaterial({ color: col, roughness: 0.7, metalness: 0.3 }));
+
+  // Reflective Mirror-Glass Panels
+  const mirrorGlassMat = new THREE.MeshStandardMaterial({
+    color: 0x7fa5cf,
+    metalness: 0.95,
+    roughness: 0.08,
+    envMapIntensity: 1.5
+  });
+
+  const warmWindowMat = new THREE.MeshBasicMaterial({ color: 0xffe28a });
 
   for(let i = 0; i <= 260; i++){
     const u = i / 260;
@@ -918,23 +921,20 @@ function buildCityInfrastructure(){
       railGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
       scene.add(railGroup);
 
-      if(i % 2 === 0){
-        const hedge = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.8, 6.5), hedgeMat);
-        hedge.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH / 2 + 3.6) * side));
-        hedge.position.y = 0.55;
-        hedge.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
-        scene.add(hedge);
-      }
-
       if(i % 6 === 0){
         const lamp = new THREE.Group();
         const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 8.5, 8), lampPoleMat);
         pole.position.y = 4.25;
         const arm = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.1, 0.1), lampPoleMat);
         arm.position.set(-side * 0.9, 8.2, 0);
-        const head = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.15, 0.3), lampPoleMat);
-        head.position.set(-side * 1.8, 8.1, 0);
-        lamp.add(pole, arm, head);
+
+        const bulbMesh = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 10), new THREE.MeshBasicMaterial({ color: 0xfff0c4 }));
+        bulbMesh.position.set(-side * 1.8, 8.0, 0);
+        lamp.add(pole, arm, bulbMesh);
+
+        const streetLight = new THREE.PointLight(0xffebb3, 1.1, 40, 2);
+        streetLight.position.set(-side * 1.8, 7.8, 0);
+        lamp.add(streetLight);
 
         lamp.position.copy(pt).add(norm.clone().multiplyScalar((ROAD_WIDTH / 2 + 3.8) * side));
         lamp.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
@@ -947,7 +947,7 @@ function buildCityInfrastructure(){
         base.position.y = 1.35;
         const dome = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.62, 0.4, 16), phoneMat);
         dome.position.y = 2.85;
-        const glassFront = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.8), glassMat);
+        const glassFront = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.8), phoneGlassMat);
         glassFront.position.set(0, 1.4, 0.61);
         booth.add(base, dome, glassFront);
 
@@ -958,10 +958,7 @@ function buildCityInfrastructure(){
     });
   }
 
-  const bldgPalette = [0xd6cdc4, 0xc2b8ad, 0xb0a89d, 0x9ea8b3, 0xd4c2b2];
-  const bldgMatCache = bldgPalette.map(col => new THREE.MeshStandardMaterial({ color: col, roughness: 0.85 }));
-  const windowMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.2, metalness: 0.6 });
-
+  // Greyish Buildings with Reflective Mirror Facades
   for(let zIdx = 10; zIdx < 280; zIdx += 4){
     const u = zIdx / 280;
     const pt = roadSpline.getPointAt(u);
@@ -969,7 +966,7 @@ function buildCityInfrastructure(){
     const norm = new THREE.Vector3(-tan.z, 0, tan.x).normalize();
 
     [-1, 1].forEach(side => {
-      const bHeight = 16 + Math.random() * 22;
+      const bHeight = 18 + Math.random() * 24;
       const bWidth = 14 + Math.random() * 8;
       const bDepth = 14 + Math.random() * 6;
       const bMat = bldgMatCache[Math.floor(Math.random() * bldgMatCache.length)];
@@ -979,17 +976,27 @@ function buildCityInfrastructure(){
       building.position.y = bHeight / 2;
       building.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
 
-      const winPanel = new THREE.Mesh(new THREE.PlaneGeometry(bWidth * 0.8, bHeight * 0.7), windowMat);
-      winPanel.position.set(0, 0, (bDepth / 2 + 0.05) * -side);
-      winPanel.rotation.y = side > 0 ? Math.PI : 0;
-      building.add(winPanel);
+      const mirrorFacade = new THREE.Mesh(new THREE.PlaneGeometry(bWidth * 0.85, bHeight * 0.72), mirrorGlassMat);
+      mirrorFacade.position.set(0, 0.5, (bDepth / 2 + 0.06) * -side);
+      mirrorFacade.rotation.y = side > 0 ? Math.PI : 0;
+      building.add(mirrorFacade);
+
+      const floorCount = Math.floor(bHeight / 3);
+      for(let fl = 0; fl < floorCount; fl++){
+        if(Math.random() > 0.45){
+          const winLight = new THREE.Mesh(new THREE.PlaneGeometry(bWidth * 0.7, 0.8), warmWindowMat);
+          winLight.position.set(0, -bHeight / 2 + 3.5 + fl * 3, (bDepth / 2 + 0.08) * -side);
+          winLight.rotation.y = side > 0 ? Math.PI : 0;
+          building.add(winLight);
+        }
+      }
 
       scene.add(building);
     });
   }
 
-  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2716, roughness: 0.9 });
-  const treeFoliageMat = new THREE.MeshStandardMaterial({ color: 0x2e6930, roughness: 0.8 });
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x1f1710, roughness: 0.9 });
+  const treeFoliageMat = new THREE.MeshStandardMaterial({ color: 0x142b17, roughness: 0.85 });
 
   for(let t = 0; t < 160; t++){
     const u = Math.random();
@@ -1014,11 +1021,16 @@ function buildCityInfrastructure(){
 function buildRealisticSportsCar(){
   carMesh = new THREE.Group();
 
-  const paintMat = new THREE.MeshStandardMaterial({ color: 0xd61a22, metalness: 0.65, roughness: 0.22 });
-  const blackTrimMat = new THREE.MeshStandardMaterial({ color: 0x111317, roughness: 0.4, metalness: 0.8 });
-  const glassMat = new THREE.MeshStandardMaterial({ color: 0x070a0e, roughness: 0.1, metalness: 0.9 });
+  const paintMat = new THREE.MeshStandardMaterial({
+    color: 0xdc1428,
+    metalness: 0.75,
+    roughness: 0.18
+  });
+
+  const blackTrimMat = new THREE.MeshStandardMaterial({ color: 0x0d0f12, roughness: 0.4, metalness: 0.8 });
+  const glassMat = new THREE.MeshStandardMaterial({ color: 0x05070a, roughness: 0.08, metalness: 0.95 });
   const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xef233c });
+  const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff1e38 });
 
   const mainBody = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.52, 4.3), paintMat);
   mainBody.position.y = 0.52;
@@ -1048,14 +1060,30 @@ function buildRealisticSportsCar(){
     carMesh.add(headlight);
   });
 
+  const spotL = new THREE.SpotLight(0xfff7ed, 4.5, 75, Math.PI / 5, 0.35);
+  spotL.position.set(-0.68, 0.65, -2.15);
+  const targetL = new THREE.Object3D();
+  targetL.position.set(-0.68, 0.1, -28);
+  carMesh.add(targetL);
+  spotL.target = targetL;
+  carMesh.add(spotL);
+
+  const spotR = new THREE.SpotLight(0xfff7ed, 4.5, 75, Math.PI / 5, 0.35);
+  spotR.position.set(0.68, 0.65, -2.15);
+  const targetR = new THREE.Object3D();
+  targetR.position.set(0.68, 0.1, -28);
+  carMesh.add(targetR);
+  spotR.target = targetR;
+  carMesh.add(spotR);
+
   [-0.65, 0.65].forEach(x => {
     const taillight = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.11, 0.12), tailLightMat);
     taillight.position.set(x, 0.68, 2.16);
     carMesh.add(taillight);
   });
 
-  const tireMat = new THREE.MeshStandardMaterial({ color: 0x1f242b, roughness: 0.9 });
-  const rimMat = new THREE.MeshStandardMaterial({ color: 0xd8dee9, metalness: 0.9, roughness: 0.2 });
+  const tireMat = new THREE.MeshStandardMaterial({ color: 0x161a20, roughness: 0.9 });
+  const rimMat = new THREE.MeshStandardMaterial({ color: 0xd8dee9, metalness: 0.95, roughness: 0.15 });
 
   const tireGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.32, 20);
   tireGeo.rotateZ(Math.PI / 2);
