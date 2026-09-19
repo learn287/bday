@@ -659,33 +659,39 @@
         scoreValEl.textContent = Math.floor(GameState.score);
         speedValEl.textContent = Math.floor(GameState.speed * 1.5);
 
-        // 2. Horizontal Steering & Physics
-        const steerSpeed = 24.0;
-        if (keys.left) {
-          GameState.carXVelocity = -steerSpeed;
-        } else if (keys.right) {
-          GameState.carXVelocity = steerSpeed;
-        } else {
-          GameState.carXVelocity *= 0.82; // Friction damping
-        }
+        /// --- REPLACE THIS IN YOUR animate() FUNCTION ---
 
-        GameState.carX += GameState.carXVelocity * delta;
-        // Keep within road bounds
-        const maxCarX = ROAD_WIDTH / 2 - 1.6;
-        if (GameState.carX < -maxCarX) {
-          GameState.carX = -maxCarX;
-          GameState.carXVelocity = 0;
-        }
-        if (GameState.carX > maxCarX) {
-          GameState.carX = maxCarX;
-          GameState.carXVelocity = 0;
-        }
+// 2. Horizontal Steering & Physics (Smoothed)
+const steerAcceleration = 45.0; // How quickly steering responds
+const maxSteerSpeed = 16.0;      // Maximum sideways glide speed
+const friction = 0.88;          // Smooth glide damping
 
-        playerCar.position.x = GameState.carX;
+if (keys.left) {
+  GameState.carXVelocity = Math.max(GameState.carXVelocity - steerAcceleration * delta, -maxSteerSpeed);
+} else if (keys.right) {
+  GameState.carXVelocity = Math.min(GameState.carXVelocity + steerAcceleration * delta, maxSteerSpeed);
+} else {
+  GameState.carXVelocity *= Math.pow(friction, delta * 60); // Clean return to center
+}
 
-        // Visual roll & sway when steering
-        playerCar.rotation.y = -GameState.carXVelocity * 0.015;
-        playerCar.rotation.z = GameState.carXVelocity * 0.012;
+GameState.carX += GameState.carXVelocity * delta;
+
+// Road boundaries clamp
+const maxCarX = ROAD_WIDTH / 2 - 1.6;
+if (GameState.carX < -maxCarX) {
+  GameState.carX = -maxCarX;
+  GameState.carXVelocity = 0;
+}
+if (GameState.carX > maxCarX) {
+  GameState.carX = maxCarX;
+  GameState.carXVelocity = 0;
+}
+
+playerCar.position.x = GameState.carX;
+
+// Subtle steering angle (Y = yaw/turn, Z = slight lean without wheel lift)
+playerCar.rotation.y = -GameState.carXVelocity * 0.02; // Points nose into turn
+playerCar.rotation.z = GameState.carXVelocity * 0.003; // Tiny body lean (no lifting)
 
         // 3. Infinite Road & Element Recycling
         road.position.z = playerCar.position.z - 100;
