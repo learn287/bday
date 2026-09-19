@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Apex Racer 3D - Points & Hurdles</title>
+  <title>Apex 3D Racer - Nitro 165 Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -13,7 +13,7 @@
       padding: 0;
     }
     body {
-      background: #0b0e14;
+      background: #070a12;
       overflow: hidden;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: #fff;
@@ -27,7 +27,7 @@
       z-index: 1;
     }
 
-    /* HUD Elements */
+    /* HUD */
     #hud {
       position: absolute;
       top: 18px;
@@ -40,7 +40,7 @@
       pointer-events: none;
     }
     .hud-box {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(8px);
       padding: 10px 18px;
       border-radius: 12px;
@@ -62,7 +62,7 @@
     #score-val { color: #38bdf8; }
     #coins-val { color: #facc15; }
 
-    /* Health Bar */
+    /* Health */
     .health-container {
       display: flex;
       gap: 6px;
@@ -75,17 +75,20 @@
       border-radius: 3px;
       transition: opacity 0.3s;
     }
-    .heart.lost {
-      opacity: 0.2;
-    }
+    .heart.lost { opacity: 0.15; }
 
-    /* Speedometer */
+    /* Speedometer & Nitro Banner */
     #speedo {
       position: absolute;
       bottom: 25px;
       left: 25px;
       z-index: 10;
       pointer-events: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    #speedo.boosting {
+      border-color: #06b6d4;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.7);
     }
     .speed-num {
       font-size: 34px;
@@ -93,25 +96,34 @@
       color: #fff;
     }
     .speed-unit {
-      font-size: 13px;
+      font-size: 12px;
       color: #64748b;
       margin-left: 4px;
     }
+    #boost-indicator {
+      display: none;
+      font-size: 11px;
+      font-weight: 800;
+      color: #06b6d4;
+      letter-spacing: 1.5px;
+      margin-top: 2px;
+      text-shadow: 0 0 8px rgba(6, 182, 212, 0.8);
+    }
 
-    /* Mobile Controls */
+    /* Controls */
     #touch-controls {
       position: absolute;
       bottom: 25px;
       right: 25px;
       display: flex;
-      gap: 14px;
+      gap: 16px;
       z-index: 15;
     }
     .touch-btn {
-      width: 65px;
-      height: 65px;
-      background: rgba(30, 41, 59, 0.8);
-      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      width: 68px;
+      height: 68px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 2px solid rgba(255, 255, 255, 0.25);
       border-radius: 50%;
       color: #fff;
       font-size: 26px;
@@ -120,20 +132,20 @@
       justify-content: center;
       touch-action: manipulation;
       cursor: pointer;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
     }
     .touch-btn:active {
       background: rgba(56, 189, 248, 0.6);
-      transform: scale(0.94);
+      transform: scale(0.92);
     }
 
-    /* Modals (Start & Game Over) */
+    /* Screens */
     .overlay {
       position: absolute;
       inset: 0;
-      background: rgba(7, 11, 20, 0.85);
-      backdrop-filter: blur(12px);
+      background: rgba(7, 11, 20, 0.88);
+      backdrop-filter: blur(14px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -143,47 +155,43 @@
       padding: 20px;
     }
     .overlay h1 {
-      font-size: 46px;
+      font-size: 42px;
       font-weight: 900;
       margin-bottom: 8px;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      background: linear-gradient(135deg, #38bdf8, #06b6d4);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       letter-spacing: 2px;
     }
     .overlay p {
       color: #94a3b8;
-      max-width: 400px;
-      margin-bottom: 24px;
+      max-width: 420px;
+      margin-bottom: 22px;
       line-height: 1.6;
       font-size: 15px;
     }
     .start-btn {
       padding: 14px 44px;
-      background: linear-gradient(135deg, #2563eb, #38bdf8);
+      background: linear-gradient(135deg, #0284c7, #06b6d4);
       border: none;
       border-radius: 30px;
       color: white;
       font-size: 18px;
       font-weight: 700;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.5);
       transition: transform 0.2s, box-shadow 0.2s;
     }
     .start-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(37, 99, 235, 0.7);
+      box-shadow: 0 10px 28px rgba(6, 182, 212, 0.7);
     }
-    .hidden {
-      display: none !important;
-    }
+    .hidden { display: none !important; }
   </style>
-  <!-- Three.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-  <!-- 3D Canvas Mount -->
   <div id="canvas-container"></div>
 
   <!-- HUD Overlay -->
@@ -207,28 +215,28 @@
   </div>
 
   <div id="speedo" class="hud-box">
-    <span class="speed-num" id="speed-val">0</span>
-    <span class="speed-unit">KM/H</span>
+    <div>
+      <span class="speed-num" id="speed-val">0</span>
+      <span class="speed-unit">KM/H</span>
+    </div>
+    <div id="boost-indicator">⚡ NITRO 165 KM/H</div>
   </div>
 
-  <!-- Touch Controls -->
   <div id="touch-controls">
     <button class="touch-btn" id="btn-left">◀</button>
     <button class="touch-btn" id="btn-right">▶</button>
   </div>
 
-  <!-- Start Screen -->
   <div class="overlay" id="start-screen">
-    <h1>TURBO DRIFT 3D</h1>
-    <p>Steer through the highway, gather <b>Gold Stars</b> for extra points, and dodge <b>Roadblocks & Spikes</b>. Survive as long as you can!</p>
+    <h1>APEX NITRO 3D</h1>
+    <p>Grab <b>Coins</b>, dodge <b>Hurdles</b>, and collect <b>Cyan Boosters</b> to rocket your speed up to <b>165 KM/H</b> with temporary invincibility!</p>
     <p style="font-size: 13px; color: #64748b;">Controls: <b>A / D</b> or <b>Left / Right Arrow Keys</b></p>
     <button class="start-btn" id="btn-start">START RACE</button>
   </div>
 
-  <!-- Game Over Screen -->
   <div class="overlay hidden" id="game-over-screen">
     <h1 style="background: linear-gradient(135deg, #ef4444, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">CAR TOTALED!</h1>
-    <p>You crashed too many times on the expressway.</p>
+    <p>You ran out of durability on the highway.</p>
     <div style="margin-bottom: 24px;">
       <div style="color: #94a3b8; font-size: 13px;">FINAL SCORE</div>
       <div id="final-score" style="font-size: 42px; font-weight: 900; color: #38bdf8;">0</div>
@@ -238,7 +246,7 @@
 
   <script>
     /* =========================================================================
-       1. SYNTHETIC AUDIO ENGINE (Web Audio API)
+       1. SYNTHETIC AUDIO ENGINE WITH NITRO SOUND
        ========================================================================= */
     const AudioEngine = {
       ctx: null,
@@ -252,14 +260,28 @@
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, this.ctx.currentTime); // A5
-        osc.frequency.exponentialRampToValueAtTime(1760, this.ctx.currentTime + 0.12); // A6
+        osc.frequency.setValueAtTime(880, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1760, this.ctx.currentTime + 0.12);
         gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start();
         osc.stop(this.ctx.currentTime + 0.18);
+      },
+      playBoostSound() {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(250, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(950, this.ctx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.55);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.55);
       },
       playCrashSound() {
         if (!this.ctx) return;
@@ -278,12 +300,12 @@
     };
 
     /* =========================================================================
-       2. THREE.JS SCENE SETUP
+       2. SCENE SETUP & 3-LANE GEOMETRY
        ========================================================================= */
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0f1d);
-    scene.fog = new THREE.FogExp2(0x0a0f1d, 0.008);
+    scene.background = new THREE.Color(0x070a12);
+    scene.fog = new THREE.FogExp2(0x070a12, 0.007);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -293,85 +315,78 @@
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     container.appendChild(renderer.domElement);
 
-    // Lighting
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 0.7);
     scene.add(hemiLight);
 
     const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    sunLight.position.set(10, 40, 20);
+    sunLight.position.set(15, 40, 20);
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 1024;
-    sunLight.shadow.mapSize.height = 1024;
     scene.add(sunLight);
 
-    /* =========================================================================
-       3. ROAD & ENVIRONMENT
-       ========================================================================= */
-    const ROAD_WIDTH = 14;
+    const ROAD_WIDTH = 12;
     const ROAD_LENGTH = 400;
+    const LANES = [-4, 0, 4]; // 3 precise lanes
 
-    // Road Mesh
     const roadGeo = new THREE.PlaneGeometry(ROAD_WIDTH, ROAD_LENGTH);
-    const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+    const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e2430, roughness: 0.8 });
     const road = new THREE.Mesh(roadGeo, roadMat);
     road.rotation.x = -Math.PI / 2;
     road.receiveShadow = true;
     scene.add(road);
 
-    // Road Stripes
+    // Dividers at -2 and +2
     const stripeGroup = new THREE.Group();
-    const stripeGeo = new THREE.PlaneGeometry(0.35, 4);
-    const stripeMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc });
-    const STRIPE_COUNT = 30;
+    const stripeGeo = new THREE.PlaneGeometry(0.3, 4);
+    const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const STRIPE_COUNT = 32;
     const STRIPE_SPACING = ROAD_LENGTH / STRIPE_COUNT;
 
     for (let i = 0; i < STRIPE_COUNT; i++) {
+      const zPos = -i * STRIPE_SPACING;
+      
       const stripeL = new THREE.Mesh(stripeGeo, stripeMat);
       stripeL.rotation.x = -Math.PI / 2;
-      stripeL.position.set(-ROAD_WIDTH / 4, 0.02, -i * STRIPE_SPACING);
+      stripeL.position.set(-2, 0.02, zPos);
       stripeGroup.add(stripeL);
 
       const stripeR = new THREE.Mesh(stripeGeo, stripeMat);
       stripeR.rotation.x = -Math.PI / 2;
-      stripeR.position.set(ROAD_WIDTH / 4, 0.02, -i * STRIPE_SPACING);
+      stripeR.position.set(2, 0.02, zPos);
       stripeGroup.add(stripeR);
     }
     scene.add(stripeGroup);
 
-    // Side Barriers (Curbs)
-    const curbGeo = new THREE.BoxGeometry(0.8, 0.6, ROAD_LENGTH);
-    const curbMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+    // Guardrails
+    const curbGeo = new THREE.BoxGeometry(0.7, 0.5, ROAD_LENGTH);
+    const curbMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8 });
     const leftCurb = new THREE.Mesh(curbGeo, curbMat);
-    leftCurb.position.set(-ROAD_WIDTH / 2 - 0.4, 0.3, -ROAD_LENGTH / 2);
+    leftCurb.position.set(-ROAD_WIDTH / 2 - 0.35, 0.25, -ROAD_LENGTH / 2);
     const rightCurb = new THREE.Mesh(curbGeo, curbMat);
-    rightCurb.position.set(ROAD_WIDTH / 2 + 0.4, 0.3, -ROAD_LENGTH / 2);
-    scene.add(leftCurb);
-    scene.add(rightCurb);
+    rightCurb.position.set(ROAD_WIDTH / 2 + 0.35, 0.25, -ROAD_LENGTH / 2);
+    scene.add(leftCurb, rightCurb);
 
-    // Distant City Skyline
+    // City Buildings
     const cityGroup = new THREE.Group();
-    const bldgMat = new THREE.MeshBasicMaterial({ color: 0x111827 });
+    const bldgMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
     for (let i = 0; i < 40; i++) {
-      const h = 20 + Math.random() * 50;
+      const h = 25 + Math.random() * 55;
       const w = 8 + Math.random() * 8;
       const bldgGeo = new THREE.BoxGeometry(w, h, w);
       const bldg = new THREE.Mesh(bldgGeo, bldgMat);
       const side = Math.random() > 0.5 ? 1 : -1;
-      bldg.position.set(side * (25 + Math.random() * 40), h / 2, -Math.random() * ROAD_LENGTH);
+      bldg.position.set(side * (24 + Math.random() * 40), h / 2, -Math.random() * ROAD_LENGTH);
       cityGroup.add(bldg);
     }
     scene.add(cityGroup);
-
     /* =========================================================================
-       4. CAR MODEL CREATION
+       3. PLAYER CAR WITH NITRO FLAME GLOW
        ========================================================================= */
     function createSportsCar() {
       const car = new THREE.Group();
 
-      // Lower Chassis
-      const bodyGeo = new THREE.BoxGeometry(2.2, 0.6, 4.4);
+      const bodyGeo = new THREE.BoxGeometry(2.0, 0.55, 4.2);
       const bodyMat = new THREE.MeshStandardMaterial({
-        color: 0x0ea5e9, // Electric cyan
+        color: 0x0ea5e9,
         roughness: 0.3,
         metalness: 0.8
       });
@@ -380,8 +395,7 @@
       body.castShadow = true;
       car.add(body);
 
-      // Cabin / Cockpit
-      const cabinGeo = new THREE.BoxGeometry(1.7, 0.55, 2.2);
+      const cabinGeo = new THREE.BoxGeometry(1.6, 0.5, 2.1);
       const cabinMat = new THREE.MeshStandardMaterial({
         color: 0x020617,
         roughness: 0.1,
@@ -392,14 +406,13 @@
       cabin.castShadow = true;
       car.add(cabin);
 
-      // Wheels
-      const wheelGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.35, 16);
+      const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.35, 16);
       const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 });
       const wheelOffsets = [
-        [-1.15, 0.42, 1.3],
-        [1.15, 0.42, 1.3],
-        [-1.15, 0.42, -1.3],
-        [1.15, 0.42, -1.3]
+        [-1.05, 0.4, 1.2],
+        [1.05, 0.4, 1.2],
+        [-1.05, 0.4, -1.2],
+        [1.05, 0.4, -1.2]
       ];
       wheelOffsets.forEach(pos => {
         const wheel = new THREE.Mesh(wheelGeo, wheelMat);
@@ -409,38 +422,44 @@
         car.add(wheel);
       });
 
-      // Headlights & Tail lights
-      const lightGeo = new THREE.BoxGeometry(0.4, 0.15, 0.1);
+      // Front lights
+      const lightGeo = new THREE.BoxGeometry(0.35, 0.12, 0.1);
       const headMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
       const hlL = new THREE.Mesh(lightGeo, headMat);
-      hlL.position.set(-0.7, 0.55, -2.2);
+      hlL.position.set(-0.65, 0.55, -2.1);
       const hlR = hlL.clone();
-      hlR.position.x = 0.7;
+      hlR.position.x = 0.65;
       car.add(hlL, hlR);
 
-      const tailMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
-      const tlL = new THREE.Mesh(lightGeo, tailMat);
-      tlL.position.set(-0.7, 0.55, 2.2);
-      const tlR = tlL.clone();
-      tlR.position.x = 0.7;
-      car.add(tlL, tlR);
+      // Nitro exhaust glow pods
+      const boostFlameGeo = new THREE.CylinderGeometry(0.18, 0.05, 1.2, 8);
+      const boostFlameMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
+      const exhaustL = new THREE.Mesh(boostFlameGeo, boostFlameMat);
+      exhaustL.rotation.x = Math.PI / 2;
+      exhaustL.position.set(-0.55, 0.4, 2.5);
+      exhaustL.visible = false;
+
+      const exhaustR = exhaustL.clone();
+      exhaustR.position.x = 0.55;
+
+      car.add(exhaustL, exhaustR);
+      car.userData = { exhaustL, exhaustR };
 
       return car;
     }
 
     const playerCar = createSportsCar();
-    playerCar.position.set(0, 0, 0);
     scene.add(playerCar);
 
     /* =========================================================================
-       5. POINTS & HURDLES SPAWNING SYSTEM
+       4. COINS, HURDLES & NITRO BOOSTER MESHES
        ========================================================================= */
     const activeCoins = [];
     const activeHurdles = [];
+    const activeBoosters = [];
 
-    // Coin Mesh (Spinning Star Coin)
     function createCoinMesh() {
-      const geo = new THREE.CylinderGeometry(0.7, 0.7, 0.2, 12);
+      const geo = new THREE.CylinderGeometry(0.7, 0.7, 0.2, 16);
       const mat = new THREE.MeshStandardMaterial({
         color: 0xfacc15,
         metalness: 0.9,
@@ -453,67 +472,100 @@
       return coin;
     }
 
-    // Hurdle Mesh (Roadblock Barricade or Traffic Cone)
-    function createHurdleMesh(type = 'block') {
+    function createHurdleMesh() {
       const hurdleGroup = new THREE.Group();
-      if (type === 'block') {
-        const blockGeo = new THREE.BoxGeometry(2.8, 1.2, 0.8);
-        const blockMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.5 });
-        const block = new THREE.Mesh(blockGeo, blockMat);
-        block.position.y = 0.6;
-        block.castShadow = true;
-        hurdleGroup.add(block);
+      const blockGeo = new THREE.BoxGeometry(2.4, 1.1, 0.8);
+      const blockMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.5 });
+      const block = new THREE.Mesh(blockGeo, blockMat);
+      block.position.y = 0.55;
+      block.castShadow = true;
+      hurdleGroup.add(block);
 
-        // Hazard Stripes
-        const stripe = new THREE.Mesh(
-          new THREE.BoxGeometry(2.82, 0.3, 0.82),
-          new THREE.MeshBasicMaterial({ color: 0xffffff })
-        );
-        stripe.position.y = 0.6;
-        hurdleGroup.add(stripe);
-      } else {
-        // Traffic Cone
-        const coneGeo = new THREE.ConeGeometry(0.6, 1.5, 12);
-        const coneMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 });
-        const cone = new THREE.Mesh(coneGeo, coneMat);
-        cone.position.y = 0.75;
-        cone.castShadow = true;
-        hurdleGroup.add(cone);
-      }
+      const stripe = new THREE.Mesh(
+        new THREE.BoxGeometry(2.42, 0.25, 0.82),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
+      stripe.position.y = 0.55;
+      hurdleGroup.add(stripe);
       return hurdleGroup;
     }
 
-    // Lanes definition
-    const LANES = [-4.5, -1.8, 1.8, 4.5];
+    // Glowing Cyan Nitro Capsule
+    function createBoosterMesh() {
+      const boosterGroup = new THREE.Group();
+      const capsuleGeo = new THREE.CylinderGeometry(0.45, 0.45, 1.4, 16);
+      const capsuleMat = new THREE.MeshStandardMaterial({
+        color: 0x06b6d4,
+        emissive: 0x0891b2,
+        emissiveIntensity: 0.7,
+        metalness: 0.8
+      });
+      const capsule = new THREE.Mesh(capsuleGeo, capsuleMat);
+      capsule.rotation.z = Math.PI / 4;
+      boosterGroup.add(capsule);
+
+      const ringGeo = new THREE.TorusGeometry(0.7, 0.08, 8, 24);
+      const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      boosterGroup.add(ring);
+      boosterGroup.userData = { ring };
+
+      return boosterGroup;
+    }
 
     function spawnGameElements() {
-      // Spawn items far in front of car
       const spawnZ = playerCar.position.z - 160;
+      const laneIndices = [0, 1, 2].sort(() => 0.5 - Math.random());
 
-      // Decide randomly to spawn a Hurdle, Coin, or both in separate lanes
-      const availableLanes = [...LANES].sort(() => 0.5 - Math.random());
-
-      // 70% chance to spawn hurdle
-      if (Math.random() < 0.75) {
-        const lane = availableLanes.pop();
-        const hurdleMesh = createHurdleMesh(Math.random() > 0.4 ? 'block' : 'cone');
-        hurdleMesh.position.set(lane, 0, spawnZ);
-        scene.add(hurdleMesh);
-        activeHurdles.push(hurdleMesh);
+      // 1. Spawning Hurdle
+      if (Math.random() < 0.7) {
+        const lane = laneIndices.pop();
+        const hurdle = createHurdleMesh();
+        hurdle.position.set(LANES[lane], 0, spawnZ);
+        scene.add(hurdle);
+        activeHurdles.push(hurdle);
       }
 
-      // 60% chance to spawn gold points
-      if (Math.random() < 0.65) {
-        const lane = availableLanes.pop();
+      // 2. Spawning Nitro Booster (25% chance)
+      if (Math.random() < 0.28 && laneIndices.length > 0) {
+        const lane = laneIndices.pop();
+        const booster = createBoosterMesh();
+        booster.position.set(LANES[lane], 0.9, spawnZ);
+        scene.add(booster);
+        activeBoosters.push(booster);
+      }
+
+      // 3. Spawning Gold Coin
+      if (Math.random() < 0.75 && laneIndices.length > 0) {
+        const lane = laneIndices.pop();
         const coin = createCoinMesh();
-        coin.position.set(lane, 0.8, spawnZ);
+        coin.position.set(LANES[lane], 0.8, spawnZ);
         scene.add(coin);
         activeCoins.push(coin);
       }
     }
 
     /* =========================================================================
-       6. GAME STATE & CONTROLS
+       5. CONTROLS
+       ========================================================================= */
+    function changeLane(direction) {
+      if (!GameState.RUNNING) return;
+      if (direction === 'left' && GameState.currentLane > 0) {
+        GameState.currentLane--;
+      } else if (direction === 'right' && GameState.currentLane < 2) {
+        GameState.currentLane++;
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') changeLane('left');
+      if (e.code === 'ArrowRight' || e.code === 'KeyD') changeLane('right');
+    });
+
+    document.getElementById('btn-left').addEventListener('click', () => changeLane('left'));
+    document.getElementById('btn-right').addEventListener('click', () => changeLane('right'));
+    /* =========================================================================
+       6. GAME STATE & NITR0 SPEED UP TO 165 KM/H
        ========================================================================= */
     const GameState = {
       RUNNING: false,
@@ -521,45 +573,19 @@
       coins: 0,
       health: 3,
       speed: 0,
-      maxSpeed: 85,
-      carX: 0,
-      carXVelocity: 0,
+      baseMaxSpeed: 95,     // Standard highway cruise
+      absoluteMaxSpeed: 165, // Strict Upper Limit
+      boostTimer: 0,        // Active boost duration
+      currentLane: 1,
       lastSpawnZ: 0,
       shakeIntensity: 0
     };
 
-    const keys = { left: false, right: false };
-
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
-      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
-    });
-
-    window.addEventListener('keyup', (e) => {
-      if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
-      if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
-    });
-
-    // Touch controls
-    const btnLeft = document.getElementById('btn-left');
-    const btnRight = document.getElementById('btn-right');
-
-    const bindTouch = (btn, dir) => {
-      btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[dir] = true; });
-      btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[dir] = false; });
-      btn.addEventListener('mousedown', () => keys[dir] = true);
-      btn.addEventListener('mouseup', () => keys[dir] = false);
-      btn.addEventListener('mouseleave', () => keys[dir] = false);
-    };
-    bindTouch(btnLeft, 'left');
-    bindTouch(btnRight, 'right');
-
-    /* =========================================================================
-       7. CORE GAME LOOP & COLLISION LOGIC
-       ========================================================================= */
     const scoreValEl = document.getElementById('score-val');
     const coinsValEl = document.getElementById('coins-val');
     const speedValEl = document.getElementById('speed-val');
+    const speedoBox = document.getElementById('speedo');
+    const boostIndicator = document.getElementById('boost-indicator');
     const finalScoreEl = document.getElementById('final-score');
 
     function updateHealthUI() {
@@ -576,8 +602,8 @@
     function triggerCrash() {
       AudioEngine.playCrashSound();
       GameState.health--;
-      GameState.speed = Math.max(GameState.speed * 0.4, 20); // abrupt speed drop
-      GameState.shakeIntensity = 0.5; // camera tremor
+      GameState.speed = Math.max(GameState.speed * 0.35, 30);
+      GameState.shakeIntensity = 0.5;
       updateHealthUI();
 
       if (GameState.health <= 0) {
@@ -592,9 +618,18 @@
       coinsValEl.textContent = GameState.coins;
       scoreValEl.textContent = Math.floor(GameState.score);
 
-      // Flash remove
       scene.remove(coin);
       activeCoins.splice(index, 1);
+    }
+
+    function activateNitroBoost(booster, index) {
+      AudioEngine.playBoostSound();
+      GameState.boostTimer = 5.0; // 5 full seconds of nitro!
+      GameState.score += 150;
+      GameState.speed = GameState.absoluteMaxSpeed; // Instantly push to 165 KM/H
+
+      scene.remove(booster);
+      activeBoosters.splice(index, 1);
     }
 
     function gameOver() {
@@ -608,20 +643,21 @@
       GameState.score = 0;
       GameState.coins = 0;
       GameState.health = 3;
-      GameState.speed = 0;
-      GameState.carX = 0;
-      GameState.carXVelocity = 0;
+      GameState.speed = 50;
+      GameState.boostTimer = 0;
+      GameState.currentLane = 1;
       GameState.lastSpawnZ = 0;
       GameState.shakeIntensity = 0;
 
       playerCar.position.set(0, 0, 0);
       playerCar.rotation.set(0, 0, 0);
 
-      // Clear existing obstacles and coins
       activeCoins.forEach(c => scene.remove(c));
       activeHurdles.forEach(h => scene.remove(h));
+      activeBoosters.forEach(b => scene.remove(b));
       activeCoins.length = 0;
       activeHurdles.length = 0;
+      activeBoosters.length = 0;
 
       scoreValEl.textContent = '0';
       coinsValEl.textContent = '0';
@@ -649,56 +685,57 @@
       const delta = Math.min(clock.getDelta(), 0.1);
 
       if (GameState.RUNNING) {
-        // 1. Forward Speed & Acceleration
-        if (GameState.speed < GameState.maxSpeed) {
-          GameState.speed += 22 * delta;
+        // 1. NITRO BOOST & SPEED PROCESSING (MAX 165 KM/H)
+        const isBoosting = GameState.boostTimer > 0;
+
+        if (isBoosting) {
+          GameState.boostTimer -= delta;
+          GameState.speed = GameState.absoluteMaxSpeed; // Lock at 165
+          speedoBox.classList.add('boosting');
+          boostIndicator.style.display = 'block';
+          playerCar.userData.exhaustL.visible = true;
+          playerCar.userData.exhaustR.visible = true;
+
+          // High-speed camera FOV warp
+          camera.fov += (72 - camera.fov) * 0.1;
+        } else {
+          speedoBox.classList.remove('boosting');
+          boostIndicator.style.display = 'none';
+          playerCar.userData.exhaustL.visible = false;
+          playerCar.userData.exhaustR.visible = false;
+
+          // Gradual increase towards base cruise speed
+          if (GameState.speed < GameState.baseMaxSpeed) {
+            GameState.speed += 18 * delta;
+          } else if (GameState.speed > GameState.baseMaxSpeed) {
+            GameState.speed -= 25 * delta; // Smooth return from boost
+          }
+          camera.fov += (60 - camera.fov) * 0.1;
         }
-        const forwardStep = (GameState.speed * 0.45) * delta;
+        camera.updateProjectionMatrix();
+
+        // Strict clamp to 165
+        GameState.speed = Math.min(GameState.speed, GameState.absoluteMaxSpeed);
+
+        const forwardStep = (GameState.speed * 0.5) * delta;
         playerCar.position.z -= forwardStep;
-        GameState.score += forwardStep * 0.8;
+        GameState.score += forwardStep * (isBoosting ? 1.5 : 0.9);
         scoreValEl.textContent = Math.floor(GameState.score);
-        speedValEl.textContent = Math.floor(GameState.speed * 1.5);
+        speedValEl.textContent = Math.floor(GameState.speed);
 
-        /// --- REPLACE THIS IN YOUR animate() FUNCTION ---
+        // 2. Smooth Lane Transition & Flat Turning
+        const targetX = LANES[GameState.currentLane];
+        playerCar.position.x += (targetX - playerCar.position.x) * 14 * delta;
 
-// 2. Horizontal Steering & Physics (Smoothed)
-const steerAcceleration = 45.0; // How quickly steering responds
-const maxSteerSpeed = 16.0;      // Maximum sideways glide speed
-const friction = 0.88;          // Smooth glide damping
+        const dx = targetX - playerCar.position.x;
+        playerCar.rotation.y = -dx * 0.08;
+        playerCar.rotation.z = 0;
 
-if (keys.left) {
-  GameState.carXVelocity = Math.max(GameState.carXVelocity - steerAcceleration * delta, -maxSteerSpeed);
-} else if (keys.right) {
-  GameState.carXVelocity = Math.min(GameState.carXVelocity + steerAcceleration * delta, maxSteerSpeed);
-} else {
-  GameState.carXVelocity *= Math.pow(friction, delta * 60); // Clean return to center
-}
-
-GameState.carX += GameState.carXVelocity * delta;
-
-// Road boundaries clamp
-const maxCarX = ROAD_WIDTH / 2 - 1.6;
-if (GameState.carX < -maxCarX) {
-  GameState.carX = -maxCarX;
-  GameState.carXVelocity = 0;
-}
-if (GameState.carX > maxCarX) {
-  GameState.carX = maxCarX;
-  GameState.carXVelocity = 0;
-}
-
-playerCar.position.x = GameState.carX;
-
-// Subtle steering angle (Y = yaw/turn, Z = slight lean without wheel lift)
-playerCar.rotation.y = -GameState.carXVelocity * 0.02; // Points nose into turn
-playerCar.rotation.z = GameState.carXVelocity * 0.003; // Tiny body lean (no lifting)
-
-        // 3. Infinite Road & Element Recycling
+        // 3. Highway & Striping Loop
         road.position.z = playerCar.position.z - 100;
         leftCurb.position.z = playerCar.position.z - 100;
         rightCurb.position.z = playerCar.position.z - 100;
 
-        // Shift stripes dynamically
         stripeGroup.children.forEach(stripe => {
           if (stripe.position.z > playerCar.position.z + 20) {
             stripe.position.z -= ROAD_LENGTH;
@@ -706,39 +743,59 @@ playerCar.rotation.z = GameState.carXVelocity * 0.003; // Tiny body lean (no lif
         });
 
         // 4. Procedural Spawning
-        if (playerCar.position.z - GameState.lastSpawnZ < -24) {
+        if (playerCar.position.z - GameState.lastSpawnZ < -25) {
           spawnGameElements();
           GameState.lastSpawnZ = playerCar.position.z;
         }
 
-        // 5. Coins Animation & Collision Check
+        // 5. Coins Check
         for (let i = activeCoins.length - 1; i >= 0; i--) {
           const coin = activeCoins[i];
           coin.rotation.z += 3.5 * delta;
 
-          // Check distance to car
-          const dist = playerCar.position.distanceTo(coin.position);
-          if (dist < 2.0) {
+          const distZ = Math.abs(playerCar.position.z - coin.position.z);
+          const distX = Math.abs(playerCar.position.x - coin.position.x);
+
+          if (distX < 1.6 && distZ < 2.4) {
             collectCoin(coin, i);
           } else if (coin.position.z > playerCar.position.z + 15) {
-            // Clean up old passed coin
             scene.remove(coin);
             activeCoins.splice(i, 1);
           }
         }
 
-        // 6. Hurdles Collision Check
+        // 6. Booster Check
+        for (let i = activeBoosters.length - 1; i >= 0; i--) {
+          const booster = activeBoosters[i];
+          booster.rotation.y += 4.0 * delta;
+          booster.userData.ring.rotation.x += 3.0 * delta;
+
+          const distZ = Math.abs(playerCar.position.z - booster.position.z);
+          const distX = Math.abs(playerCar.position.x - booster.position.x);
+
+          if (distX < 1.6 && distZ < 2.4) {
+            activateNitroBoost(booster, i);
+          } else if (booster.position.z > playerCar.position.z + 15) {
+            scene.remove(booster);
+            activeBoosters.splice(i, 1);
+          }
+        }
+
+        // 7. Hurdles Collision (Invincible during Boost!)
         for (let i = activeHurdles.length - 1; i >= 0; i--) {
           const hurdle = activeHurdles[i];
-          const dist = playerCar.position.distanceTo(hurdle.position);
+          const distZ = Math.abs(playerCar.position.z - hurdle.position.z);
+          const distX = Math.abs(playerCar.position.x - hurdle.position.x);
 
-          // Bounding box approximation
-          const dx = Math.abs(playerCar.position.x - hurdle.position.x);
-          const dz = Math.abs(playerCar.position.z - hurdle.position.z);
-
-          if (dx < 2.0 && dz < 2.2) {
-            triggerCrash();
-            // Remove hurdle so it doesn't collide multiple times
+          if (distX < 1.5 && distZ < 2.0) {
+            if (isBoosting) {
+              // Nitro smash! Destroy hurdle with no damage taken
+              AudioEngine.playCrashSound();
+              GameState.shakeIntensity = 0.3;
+              GameState.score += 100;
+            } else {
+              triggerCrash();
+            }
             scene.remove(hurdle);
             activeHurdles.splice(i, 1);
           } else if (hurdle.position.z > playerCar.position.z + 15) {
@@ -747,14 +804,14 @@ playerCar.rotation.z = GameState.carXVelocity * 0.003; // Tiny body lean (no lif
           }
         }
 
-        // 7. Dynamic Camera Follow with Screen Shake
-        const targetCamX = playerCar.position.x * 0.65;
-        const targetCamY = playerCar.position.y + 4.5;
-        const targetCamZ = playerCar.position.z + 8.5;
+        // 8. Camera Follow & Tremor
+        const targetCamX = playerCar.position.x * 0.45;
+        const targetCamY = playerCar.position.y + (isBoosting ? 4.6 : 4.2);
+        const targetCamZ = playerCar.position.z + (isBoosting ? 8.8 : 8.0);
 
-        camera.position.x += (targetCamX - camera.position.x) * 0.12;
-        camera.position.y += (targetCamY - camera.position.y) * 0.12;
-        camera.position.z += (targetCamZ - camera.position.z) * 0.2;
+        camera.position.x += (targetCamX - camera.position.x) * 0.15;
+        camera.position.y += (targetCamY - camera.position.y) * 0.15;
+        camera.position.z += (targetCamZ - camera.position.z) * 0.22;
 
         if (GameState.shakeIntensity > 0) {
           camera.position.x += (Math.random() - 0.5) * GameState.shakeIntensity;
@@ -762,9 +819,8 @@ playerCar.rotation.z = GameState.carXVelocity * 0.003; // Tiny body lean (no lif
           GameState.shakeIntensity *= 0.88;
         }
 
-        camera.lookAt(playerCar.position.x * 0.3, playerCar.position.y + 1.2, playerCar.position.z - 15);
+        camera.lookAt(playerCar.position.x * 0.2, playerCar.position.y + 1.2, playerCar.position.z - 15);
       } else {
-        // Idle camera rotation on menu
         camera.position.x = Math.sin(Date.now() * 0.0008) * 8;
         camera.position.y = 5;
         camera.position.z = 10;
@@ -774,14 +830,12 @@ playerCar.rotation.z = GameState.carXVelocity * 0.003; // Tiny body lean (no lif
       renderer.render(scene, camera);
     }
 
-    // Responsive Resizing
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Begin render loop
     animate();
   </script>
 </body>
