@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Apex 3D Racer - Smooth Drive</title>
+  <title>Apex 3D Racer - Nitro Gauge Edition</title>
   <style>
     * {
       box-sizing: border-box;
@@ -77,13 +77,18 @@
     }
     .heart.lost { opacity: 0.15; }
 
-    /* Speedometer */
-    #speedo {
+    /* Speedometer & Nitro Meter */
+    #speedo-panel {
       position: absolute;
       bottom: 25px;
       left: 25px;
       z-index: 10;
       pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #speedo {
       transition: border-color 0.3s, box-shadow 0.3s;
     }
     #speedo.boosting {
@@ -100,13 +105,40 @@
       color: #64748b;
       margin-left: 4px;
     }
-    #boost-indicator {
+
+    /* Animated Nitro Gauge */
+    #nitro-meter-box {
       display: none;
-      font-size: 11px;
-      font-weight: 800;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border: 1px solid rgba(6, 182, 212, 0.5);
+      background: rgba(8, 20, 36, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.3);
+    }
+    .nitro-icon {
+      font-size: 18px;
       color: #06b6d4;
-      letter-spacing: 1.2px;
-      margin-top: 2px;
+      animation: pulseIcon 0.8s infinite alternate;
+    }
+    @keyframes pulseIcon {
+      from { transform: scale(1); filter: drop-shadow(0 0 2px #06b6d4); }
+      to { transform: scale(1.15); filter: drop-shadow(0 0 8px #38bdf8); }
+    }
+    .nitro-bar-track {
+      width: 100px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #nitro-bar-fill {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #06b6d4, #38bdf8);
+      border-radius: 4px;
+      transition: width 0.05s linear;
     }
 
     /* Mobile Controls */
@@ -213,12 +245,18 @@
     </div>
   </div>
 
-  <div id="speedo" class="hud-box">
-    <div>
+  <!-- Speedometer & Nitro Gauge Panel -->
+  <div id="speedo-panel">
+    <div id="speedo" class="hud-box">
       <span class="speed-num" id="speed-val">0</span>
       <span class="speed-unit">KM/H</span>
     </div>
-    <div id="boost-indicator">⚡ NITRO ACTIVE</div>
+    <div id="nitro-meter-box">
+      <span class="nitro-icon">⚡</span>
+      <div class="nitro-bar-track">
+        <div id="nitro-bar-fill"></div>
+      </div>
+    </div>
   </div>
 
   <div id="touch-controls">
@@ -228,7 +266,7 @@
 
   <div class="overlay" id="start-screen">
     <h1>APEX RACER 3D</h1>
-    <p>Steer smoothly across the highway, collect <b>Coins</b>, dodge <b>Hurdles</b>, and grab occasional <b>Cyan Nitro Boosters</b>!</p>
+    <p>Steer across the highway, collect <b>Coins</b>, and dodge <b>Hurdles</b>. Rare <b>Nitro Boosters</b> appear every 500m to rocket your speed up to <b>165 KM/H</b>!</p>
     <p style="font-size: 13px; color: #64748b;">Controls: Hold <b>A / D</b> or <b>Left / Right Arrow Keys</b></p>
     <button class="start-btn" id="btn-start">START RACE</button>
   </div>
@@ -324,7 +362,7 @@
 
     const ROAD_WIDTH = 14;
     const ROAD_LENGTH = 400;
-    const LANES = [-4.5, 0, 4.5]; // 3 balanced spawn positions
+    const LANES = [-4.5, 0, 4.5];
 
     const roadGeo = new THREE.PlaneGeometry(ROAD_WIDTH, ROAD_LENGTH);
     const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e2430, roughness: 0.8 });
@@ -333,7 +371,6 @@
     road.receiveShadow = true;
     scene.add(road);
 
-    // Subtle lane dividers
     const stripeGroup = new THREE.Group();
     const stripeGeo = new THREE.PlaneGeometry(0.3, 4);
     const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -355,7 +392,6 @@
     }
     scene.add(stripeGroup);
 
-    // Guardrails
     const curbGeo = new THREE.BoxGeometry(0.7, 0.5, ROAD_LENGTH);
     const curbMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8 });
     const leftCurb = new THREE.Mesh(curbGeo, curbMat);
@@ -364,7 +400,6 @@
     rightCurb.position.set(ROAD_WIDTH / 2 + 0.35, 0.25, -ROAD_LENGTH / 2);
     scene.add(leftCurb, rightCurb);
 
-    // Skyline
     const cityGroup = new THREE.Group();
     const bldgMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
     for (let i = 0; i < 40; i++) {
@@ -377,7 +412,7 @@
       cityGroup.add(bldg);
     }
     scene.add(cityGroup);
-    /* =========================================================================
+                                              /* =========================================================================
        3. SPORTS CAR MODEL
        ========================================================================= */
     function createSportsCar() {
@@ -429,7 +464,7 @@
       hlR.position.x = 0.65;
       car.add(hlL, hlR);
 
-      // Mild Nitro Exhaust Glow
+      // Nitro exhaust glow pods
       const boostFlameGeo = new THREE.CylinderGeometry(0.14, 0.04, 1.0, 8);
       const boostFlameMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
       const exhaustL = new THREE.Mesh(boostFlameGeo, boostFlameMat);
@@ -450,7 +485,7 @@
     scene.add(playerCar);
 
     /* =========================================================================
-       4. COINS, HURDLES & NITRO CAPSULES
+       4. COINS, HURDLES & 500-METER BOOSTER SPAWNING
        ========================================================================= */
     const activeCoins = [];
     const activeHurdles = [];
@@ -514,7 +549,7 @@
       const spawnZ = playerCar.position.z - 160;
       const laneIndices = [0, 1, 2].sort(() => 0.5 - Math.random());
 
-      // 1. Hurdle spawn
+      // 1. Hurdles
       if (Math.random() < 0.7) {
         const lane = laneIndices.pop();
         const hurdle = createHurdleMesh();
@@ -523,16 +558,18 @@
         activeHurdles.push(hurdle);
       }
 
-      // 2. Rare Nitro Booster (~15% chance, not crowded)
-      if (Math.random() < 0.16 && laneIndices.length > 0) {
+      // 2. Nitro Booster: STRICT 500-METER MINIMUM DISTANCE GAP
+      const distanceSinceLastBooster = Math.abs(spawnZ - GameState.lastBoosterZ);
+      if (distanceSinceLastBooster >= 500 && laneIndices.length > 0) {
         const lane = laneIndices.pop();
         const booster = createBoosterMesh();
         booster.position.set(LANES[lane], 0.9, spawnZ);
         scene.add(booster);
         activeBoosters.push(booster);
+        GameState.lastBoosterZ = spawnZ; // Lock out until another 500 meters!
       }
 
-      // 3. Gold Coin spawn
+      // 3. Gold Coins
       if (Math.random() < 0.75 && laneIndices.length > 0) {
         const lane = laneIndices.pop();
         const coin = createCoinMesh();
@@ -543,7 +580,7 @@
     }
 
     /* =========================================================================
-       5. SMOOTH INPUT LISTENERS
+       5. INPUT LISTENERS
        ========================================================================= */
     const keys = { left: false, right: false };
 
@@ -569,7 +606,7 @@
     bindTouch(document.getElementById('btn-left'), 'left');
     bindTouch(document.getElementById('btn-right'), 'right');
     /* =========================================================================
-       6. GAME STATE & BALANCED NITRO SPEEDS
+       6. GAME STATE & 165 KM/H SMOOTH SURGE WITH LIVE GAUGE
        ========================================================================= */
     const GameState = {
       RUNNING: false,
@@ -578,10 +615,12 @@
       health: 3,
       speed: 0,
       carXVelocity: 0,
-      baseMaxSpeed: 95,      // Smooth standard cruise
-      absoluteMaxSpeed: 155,  // Rebalanced top nitro speed
-      boostTimer: 0,         // Short 3s duration
+      baseMaxSpeed: 95,
+      absoluteMaxSpeed: 165,
+      maxBoostDuration: 3.5, // Total duration for ~100m at top speed
+      boostTimer: 0,
       lastSpawnZ: 0,
+      lastBoosterZ: -200,    // Initial offset so first booster appears around 300m
       shakeIntensity: 0
     };
 
@@ -589,7 +628,8 @@
     const coinsValEl = document.getElementById('coins-val');
     const speedValEl = document.getElementById('speed-val');
     const speedoBox = document.getElementById('speedo');
-    const boostIndicator = document.getElementById('boost-indicator');
+    const nitroMeterBox = document.getElementById('nitro-meter-box');
+    const nitroBarFill = document.getElementById('nitro-bar-fill');
     const finalScoreEl = document.getElementById('final-score');
 
     function updateHealthUI() {
@@ -628,7 +668,7 @@
 
     function activateNitroBoost(booster, index) {
       AudioEngine.playBoostSound();
-      GameState.boostTimer = 3.0; // Moderate 3-second surge
+      GameState.boostTimer = GameState.maxBoostDuration;
       GameState.score += 100;
       
       scene.remove(booster);
@@ -650,6 +690,7 @@
       GameState.carXVelocity = 0;
       GameState.boostTimer = 0;
       GameState.lastSpawnZ = 0;
+      GameState.lastBoosterZ = -200;
       GameState.shakeIntensity = 0;
 
       playerCar.position.set(0, 0, 0);
@@ -665,6 +706,7 @@
       scoreValEl.textContent = '0';
       coinsValEl.textContent = '0';
       speedValEl.textContent = '0';
+      nitroMeterBox.style.display = 'none';
       updateHealthUI();
 
       document.getElementById('start-screen').classList.add('hidden');
@@ -688,30 +730,42 @@
       const delta = Math.min(clock.getDelta(), 0.1);
 
       if (GameState.RUNNING) {
-        // 1. Nitro Speed Dynamics (Moderate & Smooth)
+        // 1. NITRO POWER DEPLETION & GAUGE UPDATE
         const isBoosting = GameState.boostTimer > 0;
 
         if (isBoosting) {
           GameState.boostTimer -= delta;
-          // Smooth climb towards 155
-          if (GameState.speed < GameState.absoluteMaxSpeed) {
-            GameState.speed += 45 * delta;
+
+          // Update Nitro Bar Width (%) in real-time
+          const remainingPct = Math.max(0, (GameState.boostTimer / GameState.maxBoostDuration) * 100);
+          nitroMeterBox.style.display = 'flex';
+          nitroBarFill.style.width = remainingPct + '%';
+
+          // Smooth speed increase up to 165 KM/H
+          if (GameState.boostTimer > 0.8) {
+            if (GameState.speed < GameState.absoluteMaxSpeed) {
+              GameState.speed += 55 * delta;
+            }
+          } else {
+            // Smoothly decrease speed as power nears 0
+            GameState.speed -= 35 * delta;
           }
+
           speedoBox.classList.add('boosting');
-          boostIndicator.style.display = 'block';
           playerCar.userData.exhaustL.visible = true;
           playerCar.userData.exhaustR.visible = true;
-          camera.fov += (66 - camera.fov) * 0.08; // Mild zoom
+          camera.fov += (66 - camera.fov) * 0.08;
         } else {
+          nitroMeterBox.style.display = 'none';
           speedoBox.classList.remove('boosting');
-          boostIndicator.style.display = 'none';
           playerCar.userData.exhaustL.visible = false;
           playerCar.userData.exhaustR.visible = false;
 
+          // Normal cruising deceleration/acceleration
           if (GameState.speed < GameState.baseMaxSpeed) {
             GameState.speed += 18 * delta;
           } else if (GameState.speed > GameState.baseMaxSpeed) {
-            GameState.speed -= 28 * delta; // Smooth deceleration
+            GameState.speed -= 28 * delta;
           }
           camera.fov += (60 - camera.fov) * 0.08;
         }
@@ -725,10 +779,10 @@
         scoreValEl.textContent = Math.floor(GameState.score);
         speedValEl.textContent = Math.floor(GameState.speed);
 
-        // 2. Horizontal Steering & Physics (Your exact smooth code)
-        const steerAcceleration = 45.0; // Responsive steering
-        const maxSteerSpeed = 16.0;      // Maximum sideways speed
-        const friction = 0.88;          // Smooth glide damping
+        // 2. Smooth Glide Steering (Your exact physics code)
+        const steerAcceleration = 45.0;
+        const maxSteerSpeed = 16.0;
+        const friction = 0.88;
 
         if (keys.left) {
           GameState.carXVelocity = Math.max(GameState.carXVelocity - steerAcceleration * delta, -maxSteerSpeed);
@@ -740,7 +794,6 @@
 
         playerCar.position.x += GameState.carXVelocity * delta;
 
-        // Road boundaries clamp
         const maxCarX = ROAD_WIDTH / 2 - 1.6;
         if (playerCar.position.x < -maxCarX) {
           playerCar.position.x = -maxCarX;
@@ -751,11 +804,10 @@
           GameState.carXVelocity = 0;
         }
 
-        // Subtle steering angle (Points nose into turn, zero wheel lift)
         playerCar.rotation.y = -GameState.carXVelocity * 0.02;
         playerCar.rotation.z = GameState.carXVelocity * 0.003;
 
-        // 3. Road & Striping Recycling
+        // 3. Infinite Highway Recycling
         road.position.z = playerCar.position.z - 100;
         leftCurb.position.z = playerCar.position.z - 100;
         rightCurb.position.z = playerCar.position.z - 100;
@@ -827,7 +879,7 @@
           }
         }
 
-        // 8. Dynamic Camera Follow
+        // 8. Camera Follow
         const targetCamX = playerCar.position.x * 0.5;
         const targetCamY = playerCar.position.y + (isBoosting ? 4.5 : 4.2);
         const targetCamZ = playerCar.position.z + (isBoosting ? 8.5 : 8.0);
@@ -863,3 +915,4 @@
   </script>
 </body>
 </html>
+    
