@@ -32,7 +32,7 @@ logging.basicConfig(
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # --- Configuration ---
-BOT_TOKEN = "8291162968:AAHoM1rpmuVe18oWzYb30nYHpo1zrCfyS28"
+BOT_TOKEN = "82911629:AAHoM1rpmuVe18oWzYb30nYHpo1zrCfyS28"
 TIMEZONE = "Asia/Kolkata"
 CHATS_FILE = "registered_chats.json"
 
